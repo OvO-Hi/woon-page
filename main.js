@@ -33,9 +33,11 @@
     body.appendChild(fold);
 
     var timer = null;
+    var hoverLock = false;   // "접기" 직후 호버 재펼침 차단. 커서가 벗어나면 해제.
 
-    function open() {
+    function open(byUser) {
       if (timer) { clearTimeout(timer); timer = null; }
+      if (!byUser && hoverLock) return;
       if (toggle.classList.contains('is-open')) return;
       toggle.classList.add('is-open');
       head.setAttribute('aria-expanded', 'true');
@@ -46,21 +48,25 @@
       head.setAttribute('aria-expanded', 'false');
     }
 
-    head.addEventListener('click', open);
+    // 제목을 직접 누르는 것은 명시적 의사 → 잠금 해제하고 펼침
+    head.addEventListener('click', function () { hoverLock = false; open(true); });
 
     if (canHover) {
       toggle.addEventListener('mouseenter', function () {
-        if (toggle.classList.contains('is-open')) return;
-        timer = setTimeout(open, HOVER_INTENT);
+        if (hoverLock || toggle.classList.contains('is-open')) return;
+        timer = setTimeout(function () { open(false); }, HOVER_INTENT);
       });
       toggle.addEventListener('mouseleave', function () {
         if (timer) { clearTimeout(timer); timer = null; }
+        hoverLock = false;          // 벗어났으니 다시 호버로 펼칠 수 있다
       });
-      head.addEventListener('focus', open);
+      // 키보드 포커스로도 펼침 (접기 직후의 프로그램적 포커스는 잠금이 막는다)
+      head.addEventListener('focus', function () { open(false); });
     }
 
     fold.addEventListener('click', function (e) {
       e.stopPropagation();
+      hoverLock = true;             // 반드시 close() 앞에 — head.focus() 가 focus 리스너를 깨운다
       close();
       if (head.getBoundingClientRect().top < 0) {
         head.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
@@ -128,6 +134,17 @@
     totop.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: reduce.matches ? 'auto' : 'smooth' });
     });
+  }
+
+  /* ── 渴脈 구간에서는 쪽빛 실이 옅어진다 (물이 마르는 암시) ─ */
+  var dry = document.querySelector('.section--dry');
+  var thread = document.querySelector('.thread');
+  if (dry && thread && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        thread.classList.toggle('is-dry', en.isIntersecting);
+      });
+    }, { rootMargin: '-30% 0px -30% 0px' }).observe(dry);
   }
 
   /* ── 라이트박스 ──────────────────────────────────────── */

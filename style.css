@@ -137,9 +137,9 @@ img{ max-width:100%; display:block; }
   position:absolute; inset:0;
   background-image:url("assets/character.png");
   background-repeat:no-repeat;
-  background-size:340% auto;
-  background-position:22% 4%;
-  opacity:.065;
+  background-size:170% auto;      /* 얼굴이 형태로 읽히는 배율 */
+  background-position:16% 0%;
+  opacity:.055;
   filter:grayscale(.4);
   pointer-events:none;
   z-index:0;
@@ -1375,3 +1375,70 @@ html.no-js .thread{ display:none; }
   .face{ grid-template-columns:minmax(0,490px) 1fr; }
   .face__figure{ max-width:490px; }
 }
+
+/* ============================================================
+   조정 — 균형 · 간지 · 미세 반응
+   ============================================================ */
+
+/* ── 身元 위계 재조정 ────────────────────────────────── */
+.record__row dt{ font-size:14px; letter-spacing:.18em; }
+.record__row dd{ font-size:clamp(19px,2vw,23px); }
+.record__row--name dd{ font-size:clamp(27px,3.2vw,38px); }
+
+/* ── 엔딩 — 실루엣만, 조금 크게 ──────────────────────── */
+.ending{ min-height:82svh; }
+.ending__silhouette{ height:106%; bottom:-9%; opacity:.06; }
+
+/* ── 章 간지 ─────────────────────────────────────────── */
+.bridge{
+  position:relative;
+  height:64vh;
+  min-height:320px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  pointer-events:none;
+  user-select:none;
+}
+.bridge__han{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(150px,25vw,360px);
+  line-height:1;
+  letter-spacing:.02em;
+  color:var(--ink);
+  opacity:.06;
+  transform:translateX(-16%);
+}
+
+/* ── 본문 선택색 — 옅은 쪽빛 ─────────────────────────── */
+::selection{ background:rgba(76,94,132,.25); }
+::-moz-selection{ background:rgba(76,94,132,.25); }
+
+/* ── 연대기 제목 옆 작은 점 (이동 없음) ──────────────── */
+.tl__item .toggle__title .han::after{
+  content:"";
+  display:inline-block;
+  width:5px; height:5px;
+  margin-left:.6em;
+  vertical-align:middle;
+  border-radius:50%;
+  border:1px solid var(--indigo);
+  background:transparent;
+  opacity:.5;
+  transition:background .55s var(--ease), opacity .55s var(--ease);
+}
+.tl__item:hover .toggle__title .han::after,
+.tl__item .toggle__head:focus-visible .han::after{
+  background:var(--indigo);
+  opacity:1;
+}
+
+/* ── 渴脈 구간에서 쪽빛 실이 옅어짐 ──────────────────── */
+.thread span{ transition:opacity .9s var(--ease); }
+.thread.is-dry span{ opacity:.14; }
+
+/* ── 히어로 메타 · 外貌 주석: 터치에서는 병기 생략 ───── */
+.hero__meta .swap__ko,
+.face__notes .swap__ko{ display:none; }

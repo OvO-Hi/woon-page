@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" fill="#ECE9E4"/>
+  <rect x="10.5" y="10.5" width="99" height="99" rx="3"
+        fill="none" stroke="#263248" stroke-width="9"/>
+  <text x="60" y="63" text-anchor="middle" dominant-baseline="central"
+        font-family="Noto Serif KR, Nanum Myeongjo, Apple SD Gothic Neo, Songti SC, SimSun, serif"
+        font-weight="700" font-size="66" fill="#263248">雲</text>
+</svg>
