@@ -2154,3 +2154,18 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   .toggle__title .lead{ transition:none !important; }
   .toggle.is-open .toggle__title .lead{ transform:none !important; }
 }
+
+/* ── 3장(磊落) 배경 워터마크 — 왼쪽 여백을 쓴다 ───────── */
+.chapter--c{ position:relative; }
+.chapter--c .chapter__glyph{
+  position:absolute;
+  left:0; top:-2%;
+  font-size:clamp(120px,17vw,260px);
+  line-height:.8;
+  opacity:.06;
+  z-index:0;
+}
+.chapter--c .chapter__main{ position:relative; z-index:1; }
+@media (max-width:899px){
+  .chapter--c .chapter__glyph{ left:auto; right:-4%; top:-3%; opacity:.05; }
+}
