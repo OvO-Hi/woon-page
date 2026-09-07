@@ -732,11 +732,14 @@ img{ max-width:100%; display:block; }
 .tl__item--break .toggle__body{ position:relative; }
 .tl__item--break .toggle__body > *{ position:relative; z-index:1; }
 
-/* 喪 — 쪽빛 선이 잠시 흐려졌다 이어진다 */
-.tl__item--fade .tl__axis::before{
-  background:linear-gradient(to bottom,
-    var(--indigo) 0%, rgba(76,94,132,.06) 42%,
-    rgba(76,94,132,.06) 58%, var(--indigo) 100%);
+/* 喪 — 진입할 때 한 번, 축이 옅어졌다 다시 이어진다 */
+.tl__item--fade .tl__axis.is-in::before{
+  animation:mournFade 1.1s ease-in-out .55s both;
+}
+@keyframes mournFade{
+  0%  { opacity:.36; }
+  45% { opacity:.07; }
+  100%{ opacity:.36; }
 }
 
 /* 마지막 — 今 */
@@ -1832,38 +1835,12 @@ html.js .hero__meta li:nth-child(4){ animation-delay:.76s; }
   inset:0;
   z-index:70;
   pointer-events:none;
-  background:linear-gradient(to top, rgba(141,135,126,.16), rgba(141,135,126,.05));
+  background:linear-gradient(to top, rgba(141,135,126,.22), rgba(141,135,126,.07));
 }
 html.js .unroll{ animation:unrollUp .8s ease-out forwards; }
 @keyframes unrollUp{
   from{ clip-path:inset(0 0 0 0); }
   to  { clip-path:inset(0 0 100% 0); }
-}
-
-/* ── 4) 마우스가 지난 자리의 물기 ────────────────────── */
-.trail{
-  position:fixed;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  overflow:hidden;
-}
-.trail i{
-  position:absolute;
-  top:0; left:0;
-  width:36px; height:36px;
-  margin:-18px 0 0 -18px;
-  border-radius:50%;
-  background:radial-gradient(circle, rgba(76,94,132,.55) 0%, rgba(76,94,132,0) 68%);
-  filter:blur(4px);
-  opacity:0;
-  will-change:opacity, transform;
-}
-.trail i.on{ animation:dropDry .8s ease-out forwards; }
-@keyframes dropDry{
-  0%  { opacity:.06; transform:scale(.82); }
-  55% { opacity:.045; }
-  100%{ opacity:0;   transform:scale(1.18); }
 }
 
 /* ── 5) 히어로 雲 — 먹이 마르듯 ─────────────────────── */
@@ -1889,38 +1866,15 @@ html.js .hero__han{ animation:inkDry 1.5s var(--ease) .1s both; }
 }
 .index__cursor.on{ opacity:1; }
 
-/* ── 8) 마지막 빗줄기 ───────────────────────────────── */
-.rain{
-  position:absolute;
-  inset:0;
-  width:100%; height:100%;
-  pointer-events:none;
-  z-index:1;
-}
-.rain line{
-  stroke:var(--indigo);
-  stroke-width:1.1;
-  opacity:0;
-  transform-box:view-box;
-  transform-origin:center;
-}
-.ending.is-raining .rain line{ animation:rainFall 2s ease-in forwards; }
-.ending.is-raining .rain line:nth-child(2){ animation-delay:.22s; }
-.ending.is-raining .rain line:nth-child(3){ animation-delay:.09s; }
-.ending.is-raining .rain line:nth-child(4){ animation-delay:.34s; }
-.ending.is-raining .rain line:nth-child(5){ animation-delay:.16s; }
-@keyframes rainFall{
-  0%  { opacity:0;   transform:translateY(-16px); }
-  22% { opacity:.08; }
-  72% { opacity:.08; }
-  100%{ opacity:0;   transform:translateY(230px); }
-}
-
 /* ── 모션 최소화 ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce){
   html.js .unroll{ animation:none !important; display:none !important; }
-  .trail{ display:none !important; }
   html.js .hero__han{ animation:none !important; filter:none !important; opacity:1 !important; }
   .index__cursor{ transition:none !important; }
-  .ending.is-raining .rain line{ animation:none !important; opacity:0 !important; }
 }
+
+/* ── 6) 갈증의 정적 — 渴脈에 머물면 미세한 움직임이 멎는다 ─ */
+body.is-still .wave img{ animation-play-state:paused; }
+body.is-still .stain--succ,
+body.is-still .chapter__glyph{ transition:none; }
+
