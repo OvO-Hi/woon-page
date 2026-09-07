@@ -2120,7 +2120,9 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   grid-template-rows:1fr;
   transition:grid-template-rows .6s var(--ease);
 }
-.toggle.is-open .toggle__title .lead-wrap{ grid-template-rows:0fr; }
+/* 타입 B(리드가 본문 중간 문장)만 가라앉는다.
+   타입 A 는 리드가 곧 본문 첫 문장이므로 펼쳐도 그대로 남는다. */
+[data-lead-type="sink"].is-open .toggle__title .lead-wrap{ grid-template-rows:0fr; }
 .toggle__title .lead{
   overflow:hidden;
   min-height:0;
@@ -2131,8 +2133,8 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
              margin-top .6s var(--ease);
 }
 /* 연대기 진입 스태거 규칙(.tl__item.reveal.is-in …)보다 우선해야 한다 */
-.tl__item.reveal.is-in.is-open .toggle__title .lead,
-.toggle.is-open .toggle__title .lead{
+.tl__item.reveal.is-in[data-lead-type="sink"].is-open .toggle__title .lead,
+[data-lead-type="sink"].is-open .toggle__title .lead{
   opacity:0;
   transform:translateY(12px);
   margin-top:0;
