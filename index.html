@@ -46,7 +46,9 @@
     <figure class="portrait">
       <div class="portrait__frame">
         <p class="portrait__ph">外貌 未添附</p>
-        <img src="assets/character.png" alt="운(雲)의 외관" onerror="this.style.display='none';">
+        <img src="assets/character.png" alt="운(雲)의 전신 외관"
+             onload="this.parentNode.classList.add('has-img');"
+             onerror="this.style.display='none';">
       </div>
       <figcaption>雲 &middot; 外貌</figcaption>
     </figure>
@@ -55,8 +57,7 @@
 
   <!-- ══ 三. 전신 이미지 다운로드 ════════════════════════ -->
   <section class="section" aria-label="전신 이미지 내려받기">
-    <!-- TODO: 전신 이미지 링크 교체 -->
-    <a class="dl" href="#">
+    <a class="dl" href="https://drive.google.com/file/d/1rQxDhYiVBbd-YzZENR1t57JeRU6BL-KN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
       <span class="dl__mark" aria-hidden="true"></span>
       전신 이미지 다운로드
     </a>

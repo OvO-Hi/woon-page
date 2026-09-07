@@ -264,6 +264,17 @@ a{ color:var(--indigo); }
   text-align:center;
   padding:1em;
 }
+/* 이미지가 실제로 붙으면 3:4 고정을 풀고 원본 비율로 */
+.portrait__frame.has-img{ aspect-ratio:auto; }
+.portrait__frame.has-img .portrait__ph{ display:none; }
+.portrait__frame.has-img img{
+  position:relative;
+  inset:auto;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+}
+
 .portrait figcaption{
   font-family:var(--sans);
   font-weight:300;
