@@ -2099,3 +2099,31 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   filter:grayscale(.55) saturate(.6);
   flex:0 0 auto;
 }
+
+/* ── 非說 항목 — 요약 상시 + 전문 토글 ─────────────── */
+.hidden-item{
+  max-width:var(--text);
+  margin:0 0 clamp(56px,7vw,86px);
+}
+.hidden-item:last-child{ margin-bottom:0; }
+.hidden-item__title{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(18px,2.1vw,22px);
+  letter-spacing:.08em;
+  line-height:1.5;
+  margin:0 0 1em;
+  padding-bottom:.75em;
+  border-bottom:1px solid var(--rule);
+}
+.hidden-item__sum{ margin:0 0 1.4em; }
+.hidden-item__sum p{ color:var(--charcoal); }
+/* 전문 토글은 이 구간에서 한 단 낮은 목소리로 */
+.hidden-item .toggle{ border-top:1px solid var(--hair2); }
+.hidden-item .toggle__title .han{
+  font-size:15px;
+  font-weight:500;
+  letter-spacing:.2em;
+  color:var(--indigo);
+}
+.hidden-item .toggle__title .ko{ margin-top:.4em; }
