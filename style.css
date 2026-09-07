@@ -1978,3 +1978,108 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   .head__han.is-in::before{ animation:none !important; opacity:0 !important; }
   .rail__mark{ transition:none !important; }
 }
+
+/* ============================================================
+   상단 고정 바 · 열람자 표시
+   ============================================================ */
+.topbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:48px;
+  z-index:60;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:0 22px;
+  background:transparent;
+  border-bottom:1px solid transparent;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .55s var(--ease), visibility .55s,
+             background-color .55s var(--ease), border-color .55s var(--ease);
+}
+@media (min-width:768px){ .topbar{ height:52px; padding:0 40px; } }
+/* 히어로에서는 투명하게 비켜 있다가 스크롤하면 올라온다 */
+.topbar.is-on{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  background-color:rgba(236,233,228,.82);
+  -webkit-backdrop-filter:blur(9px) saturate(.96);
+  backdrop-filter:blur(9px) saturate(.96);
+  border-bottom-color:var(--hair);
+}
+.topbar__title{
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:13.5px;
+  letter-spacing:.06em;
+  color:var(--charcoal);
+  white-space:nowrap;
+}
+@media (max-width:420px){ .topbar__title{ font-size:12.5px; letter-spacing:.02em; } }
+
+/* ── 열람자 ──────────────────────────────────────────── */
+.viewers{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:.6em;
+  cursor:default;
+  outline:none;
+  opacity:0;
+  transition:opacity .5s var(--ease);
+}
+.viewers.is-live{ opacity:1; }
+.viewers__dot{
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--indigo);
+  flex:0 0 auto;
+  opacity:.75;
+}
+.viewers__n{
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.14em;
+  color:var(--charcoal);
+  white-space:nowrap;
+  transition:opacity .4s var(--ease);
+}
+.viewers__tip{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  padding:8px 13px;
+  background:var(--deepblue);
+  color:var(--paper);
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.08em;
+  white-space:nowrap;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-3px);
+  transition:opacity .35s var(--ease), visibility .35s, transform .35s var(--ease);
+  pointer-events:none;
+}
+.viewers:hover .viewers__tip,
+.viewers:focus .viewers__tip,
+.viewers:focus-within .viewers__tip{
+  opacity:.94;
+  visibility:visible;
+  transform:translateY(0);
+}
+
+/* ── 고정 바 높이만큼 앵커 보정 ─────────────────────── */
+.head__han{ scroll-margin-top:82px; }
+.toggle__head{ scroll-margin-top:72px; }
+
+@media (prefers-reduced-motion: reduce){
+  .topbar{ transition:none !important; }
+  .viewers__n,.viewers__tip{ transition:none !important; }
+}

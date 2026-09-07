@@ -146,11 +146,13 @@
   var totop = document.querySelector('.totop');
   var ticking = false;
 
+  var topbar = document.querySelector('.topbar');
   function onScroll() {
     var max = document.documentElement.scrollHeight - window.innerHeight;
     var y = window.scrollY || window.pageYOffset;
     if (bar) bar.style.height = (max > 0 ? (y / max) * 100 : 0) + '%';
     if (totop) totop.classList.toggle('is-on', y > 600);
+    if (topbar) topbar.classList.toggle('is-on', y > 140);
     ticking = false;
   }
   window.addEventListener('scroll', function () {
@@ -293,4 +295,83 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && box.classList.contains('is-open')) closeBox();
   });
+})();
+
+
+/* ============================================================
+   실시간 익명 열람자 (Supabase Realtime Presence)
+   키가 비어 있거나 연결에 실패하면 표시를 조용히 걷고 끝낸다.
+   페이지 동작에는 어떤 경우에도 영향을 주지 않는다.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var el = document.querySelector('.viewers');
+  if (!el) return;
+
+  function disable() {
+    try { el.parentNode && el.parentNode.removeChild(el); } catch (e) {}
+  }
+
+  var cfg = window.WOON_CONFIG || {};
+  if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) { disable(); return; }
+
+  var numEl = el.querySelector('.viewers__n');
+  var tipEl = el.querySelector('.viewers__tip');
+  var shown = null;
+
+  function render(n) {
+    if (!(n > 0)) n = 1;
+    tipEl.textContent = '이 기록을 함께 열람 중인 자 ' + n + '인';
+    if (n === shown) return;
+    shown = n;
+    // 0.4초 페이드로 갱신 — 혼자일 때는 점만 남긴다
+    numEl.style.opacity = '0';
+    setTimeout(function () {
+      numEl.textContent = n > 1 ? ('열람 ' + n) : '';
+      numEl.style.opacity = '1';
+    }, 400);
+  }
+
+  function start() {
+    var lib = window.supabase;
+    if (!lib || typeof lib.createClient !== 'function') { disable(); return; }
+
+    var client = lib.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+      realtime: { params: { eventsPerSecond: 2 } }
+    });
+    var me = 'v-' + Math.random().toString(36).slice(2, 10);
+    var channel = client.channel(cfg.PRESENCE_CHANNEL || 'woon-page', {
+      config: { presence: { key: me } }
+    });
+
+    channel.on('presence', { event: 'sync' }, function () {
+      try { render(Object.keys(channel.presenceState()).length); } catch (e) {}
+    });
+
+    channel.subscribe(function (status) {
+      try {
+        if (status === 'SUBSCRIBED') {
+          channel.track({ at: Date.now() });
+          el.classList.add('is-live');
+          render(1);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          disable();
+        }
+      } catch (e) { disable(); }
+    });
+
+    window.addEventListener('beforeunload', function () {
+      try { channel.unsubscribe(); } catch (e) {}
+    });
+  }
+
+  try {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.async = true;
+    s.onload = function () { try { start(); } catch (e) { disable(); } };
+    s.onerror = disable;
+    document.head.appendChild(s);
+  } catch (e) { disable(); }
 })();
