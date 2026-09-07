@@ -151,6 +151,53 @@
     });
   }
 
+  /* ── 섹션 테마 — 물 → 마름 → 물 ────────────────────── */
+  var themed = document.querySelectorAll('[data-theme]');
+  if (themed.length && 'IntersectionObserver' in window) {
+    var seen = [];
+    var themeIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var i = seen.indexOf(en.target);
+        if (en.isIntersecting) { if (i < 0) seen.push(en.target); }
+        else if (i >= 0) { seen.splice(i, 1); }
+      });
+      // 가장 안쪽(나중에 선언된) 요소가 이긴다 — 脫胎 가 年代 를 덮어쓴다
+      var win = seen[seen.length - 1];
+      document.body.setAttribute('data-theme', win ? win.getAttribute('data-theme') : 'neutral');
+    }, { rootMargin: '-42% 0px -42% 0px' });
+    Array.prototype.forEach.call(themed, function (el) { themeIO.observe(el); });
+  }
+
+  /* ── 연대기 — 뷰포트 중앙의 사건만 또렷하게 ──────────── */
+  var tl = document.querySelector('.tl');
+  var tlItems = document.querySelectorAll('.tl__item');
+  if (tl && tlItems.length && 'IntersectionObserver' in window && !reduce.matches) {
+    tl.classList.add('js-focus');
+    var focusIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        en.target.classList.toggle('is-focus', en.isIntersecting);
+      });
+    }, { rootMargin: '-38% 0px -38% 0px' });
+    Array.prototype.forEach.call(tlItems, function (el) { focusIO.observe(el); });
+  }
+
+  /* ── 傳承 먹 번짐 — 8px 이내 시차 ───────────────────── */
+  var succ = document.querySelector('.stain--succ');
+  if (succ && !reduce.matches) {
+    var section = succ.closest('section');
+    var parallaxTick = false;
+    var runParallax = function () {
+      var r = section.getBoundingClientRect();
+      var mid = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
+      succ.style.transform = 'translateY(' + Math.max(-8, Math.min(8, -mid * 8)).toFixed(2) + 'px)';
+      parallaxTick = false;
+    };
+    window.addEventListener('scroll', function () {
+      if (!parallaxTick) { parallaxTick = true; window.requestAnimationFrame(runParallax); }
+    }, { passive: true });
+    runParallax();
+  }
+
   /* ── 渴脈 구간에서는 쪽빛 실이 옅어진다 (물이 마르는 암시) ─ */
   var dry = document.querySelector('.section--dry');
   var thread = document.querySelector('.thread');
