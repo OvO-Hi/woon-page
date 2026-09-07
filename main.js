@@ -48,8 +48,28 @@
       head.setAttribute('aria-expanded', 'false');
     }
 
-    // 제목을 직접 누르는 것은 명시적 의사 → 잠금 해제하고 펼침
-    head.addEventListener('click', function () { hoverLock = false; open(true); });
+    // 접기 동작 (접기 버튼 / ^ 인디케이터 공용)
+    function collapse() {
+      hoverLock = true;            // close() 앞에 — head.focus() 가 focus 리스너를 깨운다
+      close();
+      if (head.getBoundingClientRect().top < 0) {
+        head.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+      }
+      head.focus({ preventScroll: true });
+    }
+
+    // 제목을 직접 누르는 것은 명시적 의사 → 잠금 해제하고 펼침.
+    // 단, 펼쳐진 상태에서 ^ 인디케이터를 누르면 접기 버튼과 동일하게 접는다.
+    var ind = head.querySelector('.toggle__ind');
+    head.addEventListener('click', function (e) {
+      if (ind && (e.target === ind || ind.contains(e.target))
+          && toggle.classList.contains('is-open')) {
+        collapse();
+        return;
+      }
+      hoverLock = false;
+      open(true);
+    });
 
     if (canHover) {
       toggle.addEventListener('mouseenter', function () {
@@ -66,12 +86,7 @@
 
     fold.addEventListener('click', function (e) {
       e.stopPropagation();
-      hoverLock = true;             // 반드시 close() 앞에 — head.focus() 가 focus 리스너를 깨운다
-      close();
-      if (head.getBoundingClientRect().top < 0) {
-        head.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
-      }
-      head.focus({ preventScroll: true });
+      collapse();
     });
   }
   Array.prototype.forEach.call(document.querySelectorAll('.toggle'), setupToggle);

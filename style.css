@@ -1042,14 +1042,27 @@ img{ max-width:100%; display:block; }
 }
 .toggle__ind{
   flex:0 0 auto;
+  width:44px; height:44px;          /* 터치 타깃 */
+  margin-right:-14px;               /* 화살표를 시각적 오른쪽 끝에 유지 */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  background:none;
+  opacity:.6;
+  cursor:pointer;
+  transition:opacity .6s var(--ease);
+}
+.toggle__ind::before{
+  content:"";
   width:11px; height:11px;
   border-right:1px solid var(--indigo);
   border-bottom:1px solid var(--indigo);
   transform:rotate(45deg) translateY(-2px);
-  transition:transform .6s var(--ease), opacity .6s var(--ease);
-  opacity:.6;
+  transition:transform .6s var(--ease);
 }
-.toggle.is-open .toggle__ind{ transform:rotate(225deg) translateY(-2px); opacity:1; }
+.toggle.is-open .toggle__ind{ opacity:1; }
+.toggle.is-open .toggle__ind::before{ transform:rotate(225deg) translateY(-2px); }
 
 .toggle__panel{
   display:grid;
@@ -1442,3 +1455,75 @@ html.no-js .thread{ display:none; }
 /* ── 히어로 메타 · 外貌 주석: 터치에서는 병기 생략 ───── */
 .hero__meta .swap__ko,
 .face__notes .swap__ko{ display:none; }
+
+/* ============================================================
+   渴脈 표제 · 연대 병기 · 귀띔 한 줄
+   ============================================================ */
+
+/* ── 渴脈 도입 표제 ──────────────────────────────────── */
+.ability__plate{
+  max-width:var(--text);
+  margin:0 0 clamp(38px,4.5vw,56px);
+  padding-bottom:clamp(22px,3vw,30px);
+  border-bottom:1px solid var(--hair);
+}
+.ability__plate p{ margin-bottom:0; }   /* .prose p 의 1.35em 상속 차단 */
+.ability__label{
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.22em;
+  color:var(--earth);
+  margin:1.5em 0 .45em;
+}
+.ability__han{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(36px,4.4vw,44px);
+  line-height:1.25;
+  letter-spacing:.1em;
+  margin:0;
+  display:flex;
+  align-items:baseline;
+  gap:.55em;
+  flex-wrap:wrap;
+}
+.ability__han .ko{
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:14px;
+  letter-spacing:.22em;
+  color:var(--earth);
+}
+/* 옥편 주석 줄 */
+.ability__gloss{
+  font-family:var(--serif);
+  font-size:13.5px;
+  line-height:1.85;
+  color:var(--charcoal);
+  margin:1.1em 0 0;
+  padding-left:15px;
+  border-left:1px solid var(--rule);
+}
+
+/* ── 연대 나이 병기 ──────────────────────────────────── */
+.tl__agesub{
+  display:block;
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.1em;
+  color:var(--earth);
+  margin-top:.5em;
+}
+.tl__mobile-age .tl__agesub{ display:inline; margin:0 0 0 .6em; }
+
+/* ── 곁에서 귀띔하는 한 줄 ───────────────────────────── */
+.prose p.whisper,
+.whisper{
+  margin:2.8em 0 0;
+  text-align:right;
+  color:var(--earth);
+  font-size:15px;
+  line-height:1.85;
+}
