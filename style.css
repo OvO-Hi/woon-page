@@ -859,8 +859,8 @@ img{ max-width:100%; display:block; }
   padding-right:32px;
   width:1%;
 }
-.pref-table th:nth-child(2),.pref-table td:nth-child(2){ width:60%; }
-.pref-table th:nth-child(3),.pref-table td:nth-child(3){ width:28%; }
+.pref-table th:nth-child(2),.pref-table td:nth-child(2){ width:45%; }
+.pref-table th:nth-child(3),.pref-table td:nth-child(3){ width:45%; }
 
 /* ══ 11. 非說 ══════════════════════════════════════════ */
 .blank{
@@ -1191,7 +1191,7 @@ html.no-js .lightbox{ display:none; }
 }
 .index a:hover{ color:var(--indigo); }
 .index a.is-active{ color:var(--indigo); }
-.index a.is-active .index__dot{ opacity:1; transform:scale(1.7); }
+.index a.is-active .index__dot{ opacity:0; }
 @media (max-width:1100px){ .index{ display:none; } }
 
 /* ── 맨 위로 ─────────────────────────────────────────── */
@@ -1375,9 +1375,9 @@ html.no-js .thread{ display:none; }
 .record__row--name dd{ font-size:clamp(27px,3.2vw,38px); }
 
 /* ── 엔딩 — 실루엣만, 조금 크게 ──────────────────────── */
-.ending{ min-height:82svh; }
+.ending{ min-height:96svh; }
 .ending__silhouette{
-  height:106%; bottom:-9%;
+  height:80%; bottom:8%;
   opacity:0;
   filter:brightness(0) blur(4px);
 }
@@ -1820,4 +1820,107 @@ html.js .hero__meta li:nth-child(4){ animation-delay:.76s; }
   .tl__item--break .tl__axis::after{ height:116% !important; }
   .head__han > .swap{ clip-path:none !important; }
   .ending__silhouette{ opacity:.06 !important; filter:brightness(0) !important; }
+}
+
+/* ============================================================
+   연출 — 물기 · 먹 마름 · 빗줄기
+   ============================================================ */
+
+/* ── 9) 최초 로드: 아래→위로 걷히는 두루마리 ─────────── */
+.unroll{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  pointer-events:none;
+  background:linear-gradient(to top, rgba(141,135,126,.16), rgba(141,135,126,.05));
+}
+html.js .unroll{ animation:unrollUp .8s ease-out forwards; }
+@keyframes unrollUp{
+  from{ clip-path:inset(0 0 0 0); }
+  to  { clip-path:inset(0 0 100% 0); }
+}
+
+/* ── 4) 마우스가 지난 자리의 물기 ────────────────────── */
+.trail{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+}
+.trail i{
+  position:absolute;
+  top:0; left:0;
+  width:36px; height:36px;
+  margin:-18px 0 0 -18px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(76,94,132,.55) 0%, rgba(76,94,132,0) 68%);
+  filter:blur(4px);
+  opacity:0;
+  will-change:opacity, transform;
+}
+.trail i.on{ animation:dropDry .8s ease-out forwards; }
+@keyframes dropDry{
+  0%  { opacity:.06; transform:scale(.82); }
+  55% { opacity:.045; }
+  100%{ opacity:0;   transform:scale(1.18); }
+}
+
+/* ── 5) 히어로 雲 — 먹이 마르듯 ─────────────────────── */
+html.js .hero__han{ animation:inkDry 1.5s var(--ease) .1s both; }
+@keyframes inkDry{
+  from{ filter:blur(3px); opacity:.6; }
+  to  { filter:blur(0);   opacity:1; }
+}
+
+/* ── 6) 인덱스 활성 표식이 미끄러진다 ───────────────── */
+.index ul{ position:relative; }
+.index__cursor{
+  position:absolute;
+  left:50%; top:0;
+  width:5px; height:5px;
+  margin-left:-2.5px;
+  border-radius:50%;
+  background:var(--indigo);
+  opacity:0;
+  transform:translateY(0);
+  transition:transform .65s var(--ease), opacity .45s var(--ease);
+  pointer-events:none;
+}
+.index__cursor.on{ opacity:1; }
+
+/* ── 8) 마지막 빗줄기 ───────────────────────────────── */
+.rain{
+  position:absolute;
+  inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  z-index:1;
+}
+.rain line{
+  stroke:var(--indigo);
+  stroke-width:1.1;
+  opacity:0;
+  transform-box:view-box;
+  transform-origin:center;
+}
+.ending.is-raining .rain line{ animation:rainFall 2s ease-in forwards; }
+.ending.is-raining .rain line:nth-child(2){ animation-delay:.22s; }
+.ending.is-raining .rain line:nth-child(3){ animation-delay:.09s; }
+.ending.is-raining .rain line:nth-child(4){ animation-delay:.34s; }
+.ending.is-raining .rain line:nth-child(5){ animation-delay:.16s; }
+@keyframes rainFall{
+  0%  { opacity:0;   transform:translateY(-16px); }
+  22% { opacity:.08; }
+  72% { opacity:.08; }
+  100%{ opacity:0;   transform:translateY(230px); }
+}
+
+/* ── 모션 최소화 ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  html.js .unroll{ animation:none !important; display:none !important; }
+  .trail{ display:none !important; }
+  html.js .hero__han{ animation:none !important; filter:none !important; opacity:1 !important; }
+  .index__cursor{ transition:none !important; }
+  .ending.is-raining .rain line{ animation:none !important; opacity:0 !important; }
 }

@@ -126,6 +126,17 @@
       });
       var active = map.filter(function (m) { return m.visible; })[0];
       map.forEach(function (m) { m.link.classList.toggle('is-active', m === active); });
+      // 활성 표식을 해당 점 위치로 미끄러뜨린다
+      var cur = document.querySelector('.index__cursor');
+      if (cur) {
+        if (active) {
+          var dot = active.link.querySelector('.index__dot');
+          cur.style.transform = 'translateY(' + (dot.offsetTop + dot.offsetHeight / 2 - 2.5) + 'px)';
+          cur.classList.add('on');
+        } else {
+          cur.classList.remove('on');
+        }
+      }
     }, { rootMargin: '-45% 0px -45% 0px' });
     map.forEach(function (m) { navIO.observe(m.sec); });
   }
@@ -226,6 +237,69 @@
         thread.classList.toggle('is-dry', en.isIntersecting);
       });
     }, { rootMargin: '-30% 0px -30% 0px' }).observe(dry);
+  }
+
+  /* ── 두루마리 레이어는 다 걷히면 치운다 ───────────────── */
+  var unroll = document.querySelector('.unroll');
+  if (unroll) {
+    setTimeout(function () { unroll.remove(); }, reduce.matches ? 0 : 1000);
+  }
+
+  /* ── 엔딩에 다다르면 빗줄기 1회 ──────────────────────── */
+  /* 엔딩은 문서 끝이 아니라 好惡·非說·確認 앞의 간주 구간이므로,
+     "최하단"이 아니라 엔딩이 화면을 채울 때 내려야 실제로 보인다 */
+  var ending = document.querySelector('.ending');
+  if (ending && !reduce.matches && 'IntersectionObserver' in window) {
+    var rainIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.intersectionRatio >= 0.6) {
+          ending.classList.add('is-raining');
+          rainIO.disconnect();
+        }
+      });
+    }, { threshold: [0, 0.6] });
+    rainIO.observe(ending);
+  }
+
+  /* ── 마우스가 지난 자리의 물기 (渴脈 구간에서는 남지 않음) ─ */
+  var trail = document.querySelector('.trail');
+  if (trail && canHover && !reduce.matches) {
+    var POOL = 14, drops = [], di = 0, lastX = -1e4, lastY = -1e4;
+    for (var d = 0; d < POOL; d++) {
+      var el = document.createElement('i');
+      trail.appendChild(el);
+      drops.push(el);
+    }
+    var dryRect = null;
+    function measureDry() {
+      var dryEl = document.querySelector('.section--dry');
+      dryRect = dryEl ? dryEl.getBoundingClientRect() : null;
+    }
+    measureDry();
+    window.addEventListener('scroll', measureDry, { passive: true });
+    window.addEventListener('resize', measureDry, { passive: true });
+
+    var pending = null, trailTick = false;
+    function place() {
+      trailTick = false;
+      if (!pending) return;
+      var x = pending.x, y = pending.y;
+      pending = null;
+      // 渴脈 구간 안에서는 물기가 남지 않는다
+      if (dryRect && y >= dryRect.top && y <= dryRect.bottom) return;
+      if (Math.abs(x - lastX) + Math.abs(y - lastY) < 34) return;
+      lastX = x; lastY = y;
+      var el = drops[di]; di = (di + 1) % POOL;
+      el.classList.remove('on');
+      void el.offsetWidth;                       // 애니메이션 재시작
+      el.style.left = x + 'px';                  // 위치는 left/top,
+      el.style.top  = y + 'px';                  // transform 은 애니메이션이 쓴다
+      el.classList.add('on');
+    }
+    window.addEventListener('mousemove', function (e) {
+      pending = { x: e.clientX, y: e.clientY };
+      if (!trailTick) { trailTick = true; window.requestAnimationFrame(place); }
+    }, { passive: true });
   }
 
   /* ── 라이트박스 ──────────────────────────────────────── */
