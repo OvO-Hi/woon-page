@@ -139,7 +139,7 @@ img{ max-width:100%; display:block; }
   background-repeat:no-repeat;
   background-size:170% auto;      /* 얼굴이 형태로 읽히는 배율 */
   background-position:16% 0%;
-  opacity:.055;
+  opacity:.082;
   filter:grayscale(.4);
   pointer-events:none;
   z-index:0;
@@ -1272,10 +1272,15 @@ html.no-js .lightbox{ display:none; }
   transform:scaleX(1);
   transition:transform .6s cubic-bezier(.22,.61,.36,1);
 }
-.head__han > .swap{ opacity:0; }
+.head__han > .swap{
+  opacity:0;
+  clip-path:inset(0 100% 0 0);
+}
 .head__han.is-in > .swap{
   opacity:1;
-  transition:opacity .7s var(--ease) .45s;
+  clip-path:inset(0 0 0 0);
+  transition:opacity .4s var(--ease) .42s,
+             clip-path .85s cubic-bezier(.22,.61,.36,1) .42s;
 }
 
 /* 타임라인 축: 위에서 아래로 그려져 내려감 */
@@ -1305,8 +1310,11 @@ html.no-js .lightbox{ display:none; }
 .quote p{ opacity:0; transform:translateY(8px); }
 .quote.is-in p{
   opacity:1; transform:none;
-  transition:opacity .6s var(--ease) .36s, transform .6s var(--ease) .36s;
+  transition:opacity .55s var(--ease) .36s, transform .55s var(--ease) .36s;
 }
+.quote.is-in p:nth-of-type(2){ transition-delay:.48s; }
+.quote.is-in p:nth-of-type(3){ transition-delay:.60s; }
+.quote.is-in .quote__by{ transition-delay:.66s; }
 
 /* 히어로 먹 번짐: 로드 시 1회만 아주 천천히 */
 .stain--hero{ opacity:0; transform-origin:72% 28%; }
@@ -1368,7 +1376,16 @@ html.no-js .thread{ display:none; }
 
 /* ── 엔딩 — 실루엣만, 조금 크게 ──────────────────────── */
 .ending{ min-height:82svh; }
-.ending__silhouette{ height:106%; bottom:-9%; opacity:.06; }
+.ending__silhouette{
+  height:106%; bottom:-9%;
+  opacity:0;
+  filter:brightness(0) blur(4px);
+}
+.ending__silhouette.is-in{
+  opacity:.06;
+  filter:brightness(0) blur(0);
+  transition:opacity 2s var(--ease), filter 2s var(--ease);
+}
 
 /* ── 章 간지 ─────────────────────────────────────────── */
 .bridge{
@@ -1575,7 +1592,7 @@ body[data-theme="water"]  { --tint:rgba(191,199,207,.05);  }
   opacity:0;
   z-index:2;
 }
-.tl__axis.is-in .tl__dot{ opacity:1; transition:opacity .5s var(--ease) .5s; }
+.tl__axis.is-in .tl__dot{ opacity:1; transition:opacity .4s var(--ease) .1s; }
 /* 脫胎 — 이 한 마디만 크고 채워서 구분 */
 .tl__item--break .tl__dot{
   width:11px; height:11px;
@@ -1670,4 +1687,137 @@ html.js .wave img{ animation:waveBreath 8s ease-in-out infinite; }
   .tl__item--break .tl__axis::after{ filter:grayscale(1) blur(0) !important; }
   .tl.js-focus .tl__item:not(.is-focus) .tl__age,
   .tl.js-focus .tl__item:not(.is-focus) .tl__main{ opacity:1 !important; }
+}
+
+/* ============================================================
+   모션 확충 — 느리고 조용하게, 이동량 16px 이내
+   ============================================================ */
+
+/* ── 4) 히어로 로드 ──────────────────────────────────── */
+html.js .hero__figure img{
+  animation:heroRise 1.2s var(--ease) .15s both;
+}
+@keyframes heroRise{
+  from{ opacity:0; transform:translateY(16px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+html.js .hero__meta li{ animation:metaIn .75s var(--ease) both; }
+html.js .hero__meta li:nth-child(1){ animation-delay:.40s; }
+html.js .hero__meta li:nth-child(2){ animation-delay:.52s; }
+html.js .hero__meta li:nth-child(3){ animation-delay:.64s; }
+html.js .hero__meta li:nth-child(4){ animation-delay:.76s; }
+@keyframes metaIn{
+  from{ opacity:0; transform:translateY(9px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+
+/* ── 6) 外貌 ─────────────────────────────────────────── */
+.face__crop img{ transform:scale(1.02); }
+.face__crop.is-in img{ transform:scale(1); }
+.face__crop.is-in:hover img{ transform:scale(1.025); }
+.face__text{ opacity:0; transform:translateY(10px); }
+.face__text.is-in{
+  opacity:1; transform:none;
+  transition:opacity .8s var(--ease) .26s, transform .8s var(--ease) .26s;
+}
+
+/* ── 7) 性情 배경 한자 패럴럭스 (JS가 --par 를 준다) ─── */
+.chapter__glyph{ transform:translateY(var(--par, 0px)); will-change:transform; }
+
+/* ── 8) 傳承 워터마크 ────────────────────────────────── */
+.succ__mark{ opacity:0; }
+.succ__mark.is-in{ opacity:.05; transition:opacity 2s var(--ease); }
+
+/* ── 9) 渴脈 마커 순차 점등 ─────────────────────────── */
+.rail .rail__mark{ opacity:0; }
+.rail.is-in .rail__mark{ opacity:1; transition:opacity .6s var(--ease); }
+.rail.is-in .rail__item:nth-child(1) .rail__mark{ transition-delay:.05s; }
+.rail.is-in .rail__item:nth-child(2) .rail__mark{ transition-delay:.23s; }
+.rail.is-in .rail__item:nth-child(3) .rail__mark{ transition-delay:.41s; }
+.rail.is-in .rail__item:nth-child(4) .rail__mark{ transition-delay:.59s; }
+
+/* ── 10) 年代 — 나이 → 노드 → 제목 → 본문 ───────────── */
+.tl__item.reveal .tl__age,
+.tl__item.reveal .toggle__title .han,
+.tl__item.reveal .toggle__title .ko,
+.tl__item.reveal .toggle__title .lead{
+  opacity:0;
+  transform:translateY(7px);
+}
+.tl__item.reveal.is-in .tl__age,
+.tl__item.reveal.is-in .toggle__title .han,
+.tl__item.reveal.is-in .toggle__title .ko,
+.tl__item.reveal.is-in .toggle__title .lead{
+  opacity:1; transform:none;
+  transition:opacity .5s var(--ease), transform .5s var(--ease);
+}
+.tl__item.reveal.is-in .tl__age{ transition-delay:0s; }
+.tl__item.reveal.is-in .toggle__title .han{ transition-delay:.18s; }
+.tl__item.reveal.is-in .toggle__title .ko{ transition-delay:.26s; }
+.tl__item.reveal.is-in .toggle__title .lead{ transition-delay:.34s; }
+
+/* 脫胎 균열이 자라난다 */
+.tl__item--break .tl__axis::after{ height:0; }
+.tl__item--break .tl__axis.is-in::after{
+  height:116%;
+  transition:height 1.8s cubic-bezier(.22,.61,.36,1),
+             filter 1.8s var(--ease);
+}
+
+/* ── 사무 구간 — 기입된 답변 ────────────────────────── */
+.qa__ans{
+  display:flex;
+  align-items:baseline;
+  gap:.7em;
+  margin:0;
+  font-family:var(--serif);
+  font-size:1em;
+}
+.qa__ans .picked{
+  color:var(--indigo);
+  font-weight:600;
+  letter-spacing:.06em;
+}
+.qa__ans .unpicked{ color:var(--earth); }
+.qa__ans .qa__slash{ color:var(--earth); }
+.qa__ans .qa__lab{
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:13px;
+  letter-spacing:.12em;
+  color:var(--earth);
+}
+.contact-id{
+  font-family:var(--serif);
+  font-size:1.05em;
+  letter-spacing:.04em;
+  margin:0 0 .5em;
+}
+.contact-link{
+  color:var(--indigo);
+  text-decoration:none;
+  border-bottom:1px solid var(--rule);
+  padding-bottom:2px;
+  word-break:break-all;
+  transition:border-color .4s var(--ease);
+}
+.contact-link:hover{ border-bottom-color:var(--indigo); }
+.dl--sm{ margin-top:6px; font-size:13.5px; padding:10px 22px; }
+
+/* ── 모션 최소화 ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  html.js .hero__figure img,
+  html.js .hero__meta li{ animation:none !important; opacity:1 !important; transform:none !important; }
+  .face__crop img{ transform:none !important; }
+  .face__text{ opacity:1 !important; transform:none !important; }
+  .chapter__glyph{ transform:none !important; }
+  .succ__mark{ opacity:.05 !important; }
+  .rail .rail__mark{ opacity:1 !important; }
+  .tl__item.reveal .tl__age,
+  .tl__item.reveal .toggle__title .han,
+  .tl__item.reveal .toggle__title .ko,
+  .tl__item.reveal .toggle__title .lead{ opacity:1 !important; transform:none !important; }
+  .tl__item--break .tl__axis::after{ height:116% !important; }
+  .head__han > .swap{ clip-path:none !important; }
+  .ending__silhouette{ opacity:.06 !important; filter:brightness(0) !important; }
 }

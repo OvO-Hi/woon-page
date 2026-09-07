@@ -98,12 +98,15 @@
   } else {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) {
+        // 키 큰 요소(레일·연대기 항목 등)는 비율 0.15 에 도달하기 전에
+        // 화면을 이미 채우므로 높이 기준으로도 통과시킨다
+        var tall = en.boundingClientRect.height > window.innerHeight * 0.6;
+        if (en.isIntersecting && (tall || en.intersectionRatio >= 0.15)) {
           en.target.classList.add('is-in');
           io.unobserve(en.target);
         }
       });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.15 });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: [0, 0.15] });
     Array.prototype.forEach.call(reveals, function (el) { io.observe(el); });
   }
 
@@ -181,20 +184,36 @@
     Array.prototype.forEach.call(tlItems, function (el) { focusIO.observe(el); });
   }
 
-  /* ── 傳承 먹 번짐 — 8px 이내 시차 ───────────────────── */
+  /* ── 패럴럭스 — 傳承 먹 번짐 8px, 性情 배경 한자 16px ── */
   var succ = document.querySelector('.stain--succ');
-  if (succ && !reduce.matches) {
-    var section = succ.closest('section');
+  var glyphs = document.querySelectorAll('.chapter__glyph');
+  if ((succ || glyphs.length) && !reduce.matches) {
+    var succSection = succ && succ.closest('section');
     var parallaxTick = false;
+
+    // 요소 중심이 뷰포트 중심에서 얼마나 떨어졌는지 (-1 ~ 1)
+    function offset(el) {
+      var r = el.getBoundingClientRect();
+      return (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
+    }
+    function clamp(v, n) { return Math.max(-n, Math.min(n, v)); }
+
     var runParallax = function () {
-      var r = section.getBoundingClientRect();
-      var mid = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
-      succ.style.transform = 'translateY(' + Math.max(-8, Math.min(8, -mid * 8)).toFixed(2) + 'px)';
+      if (succSection) {
+        succ.style.transform =
+          'translateY(' + clamp(-offset(succSection) * 8, 8).toFixed(2) + 'px)';
+      }
+      // 본문의 0.85배 속도 → 0.15배만큼 뒤처지되 16px 로 제한
+      for (var g = 0; g < glyphs.length; g++) {
+        var d = clamp(offset(glyphs[g]) * window.innerHeight * 0.15, 16);
+        glyphs[g].style.setProperty('--par', d.toFixed(2) + 'px');
+      }
       parallaxTick = false;
     };
     window.addEventListener('scroll', function () {
       if (!parallaxTick) { parallaxTick = true; window.requestAnimationFrame(runParallax); }
     }, { passive: true });
+    window.addEventListener('resize', runParallax, { passive: true });
     runParallax();
   }
 
