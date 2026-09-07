@@ -229,6 +229,17 @@
     runParallax();
   }
 
+  /* ── 渴脈 마커: 화면 중앙에 든 항목만 활성 ──────────── */
+  var railItems = document.querySelectorAll('.rail__item');
+  if (railItems.length && 'IntersectionObserver' in window) {
+    var railIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        en.target.classList.toggle('is-mid', en.isIntersecting);
+      });
+    }, { rootMargin: '-42% 0px -42% 0px' });
+    Array.prototype.forEach.call(railItems, function (el) { railIO.observe(el); });
+  }
+
   /* ── 渴脈: 쪽빛 실이 옅어지고, 4초 머물면 미세한 움직임이 멎는다 ─ */
   var dry = document.querySelector('.section--dry');
   var thread = document.querySelector('.thread');

@@ -1697,9 +1697,6 @@ html.js .wave img{ animation:waveBreath 8s ease-in-out infinite; }
    ============================================================ */
 
 /* ── 4) 히어로 로드 ──────────────────────────────────── */
-html.js .hero__figure img{
-  animation:heroRise 1.2s var(--ease) .15s both;
-}
 @keyframes heroRise{
   from{ opacity:0; transform:translateY(16px); }
   to  { opacity:1; transform:translateY(0); }
@@ -1878,3 +1875,106 @@ body.is-still .wave img{ animation-play-state:paused; }
 body.is-still .stain--succ,
 body.is-still .chapter__glyph{ transition:none; }
 
+
+/* ============================================================
+   모바일 연대 레이아웃 수정
+   ============================================================ */
+@media (max-width:899px){
+  /* .tl__age 는 숨겨지고 .tl__axis 는 absolute 라 남는 그리드 항목이
+     .tl__main 하나뿐 → 56px 칼럼에 갇히던 문제. 그리드 자체를 해제한다 */
+  .tl__item{
+    display:block;
+    grid-template-columns:none;
+    padding-left:26px;      /* 쪽빛 세로선 자리만 비운다 */
+  }
+  .tl__main{
+    padding-left:0;         /* 본문은 남은 폭을 온전히 사용 */
+    padding-top:14px;
+  }
+  .tl__item::before{ left:5px; }
+  .tl__dot{ left:5px; top:20px; }
+  .tl__item--break .tl__dot{ left:5px; top:18px; }
+  /* 나이와 노드가 한 줄로 읽히게 */
+  .tl__mobile-age{
+    display:block;
+    margin:0 0 .35em;
+    line-height:1.4;
+  }
+  .tl__now{ padding-top:8px; }
+  .tl__item--break .tl__axis::after{ left:5px; margin-left:-52px; opacity:.09; }
+  .tl__item--break::after{ font-size:clamp(90px,26vw,150px); right:-4%; }
+}
+
+/* 좁은 화면에서 渴脈 마커 칼럼을 줄여 본문 폭 확보 */
+@media (max-width:560px){
+  .rail__item{ grid-template-columns:30px 1fr; gap:0 14px; }
+  .rail__mark{ padding-right:12px; font-size:15px; }
+}
+
+/* ============================================================
+   등장·강조 — 게임 문법의 절제된 번역 (UI 요소 없음)
+   ============================================================ */
+
+/* ── 3) 히어로 숨쉬기 ────────────────────────────────── */
+html.js .hero__figure{ animation:heroRise 1.2s var(--ease) .15s both; }
+html.js .hero__figure img{
+  position:relative;
+  z-index:1;
+  animation:heroBreathe 7s ease-in-out 1.6s infinite;
+}
+@keyframes heroBreathe{
+  0%,100%{ transform:translateY(0); }
+  50%    { transform:translateY(-3px); }
+}
+
+/* ── 4) 등장 시 옅은 쪽빛 기운 1회 ──────────────────── */
+.hero__figure{ position:relative; }
+.hero__figure::before{
+  content:"";
+  position:absolute;
+  left:50%; top:48%;
+  width:104%; aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(76,94,132,.85) 0%, rgba(76,94,132,0) 62%);
+  opacity:0;
+  pointer-events:none;
+  z-index:0;
+}
+html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
+@keyframes auraPulse{
+  0%  { opacity:0;    transform:translate(-50%,-50%) scale(.92); }
+  45% { opacity:.085; transform:translate(-50%,-50%) scale(1); }
+  100%{ opacity:0;    transform:translate(-50%,-50%) scale(1.06); }
+}
+
+/* ── 5) 대제목 입장 — 세로 먹선이 한 번 그어졌다 사라짐 ─ */
+.head__han::before{
+  content:"";
+  position:absolute;
+  left:-15px; top:0;
+  width:1px; height:100%;
+  background:var(--indigo);
+  transform:scaleY(0);
+  transform-origin:top center;
+  opacity:0;
+  pointer-events:none;
+}
+.head__han.is-in::before{ animation:slashCut .58s ease-out .06s 1; }
+@keyframes slashCut{
+  0%  { transform:scaleY(0); opacity:.85; }
+  52% { transform:scaleY(1); opacity:.85; }
+  100%{ transform:scaleY(1); opacity:0; }
+}
+
+/* ── 6) 渴脈 마커: 화면 중앙에 든 항목만 쪽빛으로 ────── */
+.rail__mark{ color:var(--earth); transition:color .7s var(--ease); }
+.rail__mark::before{ background:currentColor; transition:opacity .7s var(--ease); }
+.rail__item.is-mid .rail__mark{ color:var(--indigo); }
+
+@media (prefers-reduced-motion: reduce){
+  html.js .hero__figure,
+  html.js .hero__figure img{ animation:none !important; transform:none !important; }
+  html.js .hero__figure::before{ animation:none !important; opacity:0 !important; }
+  .head__han.is-in::before{ animation:none !important; opacity:0 !important; }
+  .rail__mark{ transition:none !important; }
+}
