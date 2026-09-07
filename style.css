@@ -2083,3 +2083,19 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   .topbar{ transition:none !important; }
   .viewers__n,.viewers__tip{ transition:none !important; }
 }
+
+/* ── 非說 — 봉해진 뒷장. 반 톤 가라앉게 ─────────────── */
+.section--hidden{ background-color:rgba(141,135,126,.045); }
+.hidden-head{
+  display:flex;
+  align-items:flex-start;
+  gap:20px;
+}
+.hidden-seal{
+  width:26px;
+  height:auto;
+  margin-top:30px;
+  opacity:.38;
+  filter:grayscale(.55) saturate(.6);
+  flex:0 0 auto;
+}
