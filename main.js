@@ -1,7 +1,6 @@
 /* ============================================================
    [ 운 / 월영 / 파수 / 1품 / M ]
-   토글 — 기본 접힘 / 데스크톱 호버로 펼침(유지) / "접기"로만 접힘
-   라이트박스 — 外貌 이미지 클릭 시 전신 원본
+   토글 · 라이트박스 · 우측 인덱스 · 진입 모션 · 스크롤 실
    ============================================================ */
 (function () {
   'use strict';
@@ -12,11 +11,11 @@
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  var HOVER_INTENT = 140; // 스치듯 지나갈 때 전부 열리지 않도록
+  var HOVER_INTENT = 140;
   var uid = 0;
 
   /* ── 토글 ────────────────────────────────────────────── */
-  function setup(toggle) {
+  function setupToggle(toggle) {
     var head  = toggle.querySelector('.toggle__head');
     var panel = toggle.querySelector('.toggle__panel');
     var body  = toggle.querySelector('.toggle__body');
@@ -63,16 +62,73 @@
     fold.addEventListener('click', function (e) {
       e.stopPropagation();
       close();
-      var top = head.getBoundingClientRect().top;
-      if (top < 0) {
+      if (head.getBoundingClientRect().top < 0) {
         head.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
       }
       head.focus({ preventScroll: true });
     });
   }
+  Array.prototype.forEach.call(document.querySelectorAll('.toggle'), setupToggle);
 
-  var toggles = document.querySelectorAll('.toggle');
-  for (var i = 0; i < toggles.length; i++) setup(toggles[i]);
+  /* ── 진입 모션 (1회) ─────────────────────────────────── */
+  var reveals = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    Array.prototype.forEach.call(reveals, function (el) { el.classList.add('is-in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          en.target.classList.add('is-in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.15 });
+    Array.prototype.forEach.call(reveals, function (el) { io.observe(el); });
+  }
+
+  /* ── 우측 인덱스 — 현재 섹션 강조 ────────────────────── */
+  var links = document.querySelectorAll('.index a[data-nav]');
+  if (links.length && 'IntersectionObserver' in window) {
+    var map = [];
+    Array.prototype.forEach.call(links, function (a) {
+      var target = document.getElementById(a.getAttribute('data-nav'));
+      var sec = target && target.closest('section');
+      if (sec) map.push({ link: a, sec: sec });
+    });
+    var navIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var hit = map.filter(function (m) { return m.sec === en.target; })[0];
+        if (hit) hit.visible = en.isIntersecting;
+      });
+      var active = map.filter(function (m) { return m.visible; })[0];
+      map.forEach(function (m) { m.link.classList.toggle('is-active', m === active); });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    map.forEach(function (m) { navIO.observe(m.sec); });
+  }
+
+  /* ── 스크롤 실 + 맨 위로 ─────────────────────────────── */
+  var bar = document.querySelector('.thread span');
+  var totop = document.querySelector('.totop');
+  var ticking = false;
+
+  function onScroll() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var y = window.scrollY || window.pageYOffset;
+    if (bar) bar.style.height = (max > 0 ? (y / max) * 100 : 0) + '%';
+    if (totop) totop.classList.toggle('is-on', y > 600);
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  onScroll();
+
+  if (totop) {
+    totop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reduce.matches ? 'auto' : 'smooth' });
+    });
+  }
 
   /* ── 라이트박스 ──────────────────────────────────────── */
   var box = document.getElementById('lightbox');
@@ -92,17 +148,11 @@
     if (opener) { opener.focus({ preventScroll: true }); opener = null; }
   }
 
-  var triggers = document.querySelectorAll('[data-lightbox]');
-  for (var j = 0; j < triggers.length; j++) {
-    (function (btn) {
-      btn.addEventListener('click', function () { openBox(btn); });
-    })(triggers[j]);
-  }
-
-  if (closeBtn) closeBtn.addEventListener('click', closeBox);
-  box.addEventListener('click', function (e) {
-    if (e.target === box) closeBox();   // 배경 클릭
+  Array.prototype.forEach.call(document.querySelectorAll('[data-lightbox]'), function (btn) {
+    btn.addEventListener('click', function () { openBox(btn); });
   });
+  if (closeBtn) closeBtn.addEventListener('click', closeBox);
+  box.addEventListener('click', function (e) { if (e.target === box) closeBox(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && box.classList.contains('is-open')) closeBox();
   });

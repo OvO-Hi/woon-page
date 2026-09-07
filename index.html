@@ -9,6 +9,21 @@
 </head>
 <body>
 
+<div class="thread" aria-hidden="true"><span></span></div>
+
+<nav class="index" aria-label="섹션 목차">
+  <ul>
+      <li><a href="#h-face" data-nav="h-face"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">外貌</span><span class="swap__ko">외모</span></span></a></li>
+      <li><a href="#h-profile" data-nav="h-profile"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">身元</span><span class="swap__ko">신원</span></span></a></li>
+      <li><a href="#h-nature" data-nav="h-nature"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">性情</span><span class="swap__ko">성정</span></span></a></li>
+      <li><a href="#h-succ" data-nav="h-succ"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">傳承</span><span class="swap__ko">전승</span></span></a></li>
+      <li><a href="#h-ability" data-nav="h-ability"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">渴脈</span><span class="swap__ko">갈맥</span></span></a></li>
+      <li><a href="#h-chron" data-nav="h-chron"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">年代</span><span class="swap__ko">연대</span></span></a></li>
+      <li><a href="#h-daily" data-nav="h-daily"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">日常</span><span class="swap__ko">일상</span></span></a></li>
+      <li><a href="#h-pref" data-nav="h-pref"><span class="index__dot" aria-hidden="true"></span><span class="swap"><span class="swap__han">好惡</span><span class="swap__ko">호오</span></span></a></li>
+  </ul>
+</nav>
+
 <main>
 
   <!-- ══ HERO ═══════════════════════════════════════════ -->
@@ -43,14 +58,14 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">一</span>
-        <h2 class="head__han" id="h-face">外貌</h2>
+        <h2 class="head__han reveal" id="h-face"><span class="swap"><span class="swap__han">外貌</span><span class="swap__ko">외모</span></span></h2>
         <p class="head__ko">외관</p>
       </div>
 
       <div class="face">
         <figure class="face__figure">
           <button class="face__crop" type="button" data-lightbox aria-label="전신 이미지 크게 보기">
-            <img src="assets/character.png" alt="운(雲)의 얼굴과 상반신">
+            <img src="assets/character-bust.png" alt="운(雲)의 얼굴과 상반신">
           </button>
           <ul class="face__notes">
             <li><span class="han">銀白</span>은백색 머리</li>
@@ -64,10 +79,7 @@
             <p>눈은 흐린 날의 하늘을 닮은 옅은 회청색으로, 특히나 볕이 독한 날이면 눈이 쉬이 말라 습관처럼 눈꺼풀을 반쯤 내리고 다닌다. 입술 역시 사철 마른 편이라, 비가 오래 오지 않을 때면 끝이 튼다.</p>
             <p>옷차림은 대체로 수수하였다. 짙은 회색빛 의복 위에 검푸른 포를 걸쳤으되 눈에 띄는 치장은 달지 않았으며, 허리춤에는 언제나 장검 하나가 비스듬히 자리하였다. 그 검을 얼마나 오래 손에 익혀 왔는지는 손을 보면 굳이 묻지 않아도 알 만했다. 손바닥이며 손가락 마디마다 칼자루를 수없이 쥐었다 놓은 이에게 으레 남는 굳은살이 두텁게 배어, 쉽사리 무를 듯하지 않았다.</p>
           </div>
-          <a class="dl" href="https://drive.google.com/file/d/1rQxDhYiVBbd-YzZENR1t57JeRU6BL-KN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
-            <span class="dl__mark" aria-hidden="true"></span>
-            전신 이미지 다운로드
-          </a>
+          <a class="dl" href="https://drive.google.com/file/d/1rQxDhYiVBbd-YzZENR1t57JeRU6BL-KN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">전신 이미지 다운로드</a>
         </div>
       </div>
     </div>
@@ -78,79 +90,79 @@
   <section class="section" aria-labelledby="h-profile">
     <div class="wrap editorial">
       <div class="record-head">
-        <div class="head" style="margin:0">
-          <span class="head__no">二</span>
-          <h2 class="head__han" id="h-profile">身元</h2>
-        </div>
-        <p class="file-no">月影 / 人事錄<br>FILE NO. 01-P</p>
+        <div class="head">
+        <span class="head__no">二</span>
+        <h2 class="head__han reveal" id="h-profile"><span class="swap"><span class="swap__han">身元</span><span class="swap__ko">신원</span></span></h2>
+      </div>
+        <p class="file-no"><span class="seal-wrap seal-wrap--sm"><svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><rect x="4.5" y="4.5" width="111" height="111" rx="3" fill="none" stroke="currentColor" stroke-width="7"/><text x="60" y="62" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif KR, Nanum Myeongjo, serif" font-weight="700" font-size="74" fill="currentColor">雲</text></svg></span>月影 / 人事錄<br>FILE NO. 01-P</p>
       </div>
 
       <dl class="record">
-        <div class="record__row record__row--name"><dt>姓名</dt><dd>운<span class="sub">성이 따로 없는 외자 이름.</span><span class="sub">어느 지방 농가의 아이가 처음 받아 쓴 이름 그대로 서른두 해를 고치지 않고 사용하였다.</span></dd></div>
-        <div class="record__row"><dt>年齡</dt><dd>32세</dd></div>
-        <div class="record__row"><dt>身長 / 體重</dt><dd>191cm / 95kg</dd></div>
-        <div class="record__row"><dt>所屬</dt><dd>월영</dd></div>
-        <div class="record__row"><dt>等級</dt><dd>1품</dd></div>
-        <div class="record__row"><dt>位</dt><dd>M</dd></div>
+        <div class="record__row record__row--name"><dt><span class="swap"><span class="swap__han">姓名</span><span class="swap__ko">이름</span></span></dt><dd>운<span class="sub">성이 따로 없는 외자 이름.</span><span class="sub">어느 지방 농가의 아이가 처음 받아 쓴 이름 그대로 서른두 해를 고치지 않고 사용하였다.</span></dd></div>
+        <div class="record__row "><dt><span class="swap"><span class="swap__han">年齡</span><span class="swap__ko">나이</span></span></dt><dd>32세</dd></div>
+        <div class="record__row "><dt><span class="swap"><span class="swap__han">身長 / 體重</span><span class="swap__ko">신장 / 체중</span></span></dt><dd>191cm / 95kg</dd></div>
+        <div class="record__row "><dt><span class="swap"><span class="swap__han">所屬</span><span class="swap__ko">진영</span></span></dt><dd>월영</dd></div>
+        <div class="record__row "><dt><span class="swap"><span class="swap__han">等級</span><span class="swap__ko">등급</span></span></dt><dd>1품</dd></div>
+        <div class="record__row "><dt><span class="swap"><span class="swap__han">位</span><span class="swap__ko">포지션</span></span></dt><dd>M</dd></div>
       </dl>
     </div>
   </section>
 
 
-  <!-- ══ 三. 性情 — 세 개의 장 ══════════════════════════ -->
+  <!-- ══ 三. 性情 ═══════════════════════════════════════ -->
   <section class="section" aria-labelledby="h-nature">
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">三</span>
-        <h2 class="head__han" id="h-nature">性情</h2>
+        <h2 class="head__han reveal" id="h-nature"><span class="swap"><span class="swap__han">性情</span><span class="swap__ko">성정</span></span></h2>
         <p class="head__ko">성격</p>
       </div>
 
       <div class="chapter chapter--a"><p class="chapter__glyph" aria-hidden="true">和</p><div class="chapter__main">
-          <h3 class="chapter__title">和而不流</h3>
-          <p class="chapter__tags">화이불류 &nbsp;·&nbsp; 무던 · 능청</p>
+          <h3 class="chapter__title"><span class="swap"><span class="swap__han">和而不流</span><span class="swap__ko">화이불류</span></span></h3>
+          <p class="chapter__tags">무던 · 능청</p>
           <p class="chapter__gloss">어울리되 휩쓸리지 아니한다.</p>
           <div class="chapter__body prose">
             <p>팔자가 사나우면 사람 성정도 모질어진다던가. 허나 서른두 해를 살아온 운을 보면 꼭 그런 것만도 아닌 모양이다.</p>
             <p>운은 자못 잘 웃는 사내였다. 처음 보는 이와 상종하기를 어려워하지 않았으며, 한담이 길어지면 제 쪽에서 먼저 수작 한마디를 얹기도 하였다. 성대한 환대를 베푸는 성품은 아니로되 찾아오는 이를 박대하지 않았으며, 꺼림칙한 자라 하여 처음부터 낯을 붉히는 법도 드물었다. 좋은 것은 좋다 이르고 싫은 것은 싫다 하되, 그 호오 하나로 사람의 전부를 헤아리려 들지는 않았으니 무릇 지난 일에도 그러하였다.</p>
-            <blockquote class="quote"><p>“스승? 죽었지. 내가 탈태하던 때에.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“스승? 죽었지. 내가 탈태하던 때에.”</p></blockquote>
             <p>그 무거운 말 뒤에 따르는 것은 고작 물 한모금이었다.</p>
-            <blockquote class="quote"><p>“오래된 일이라 자잘한 건 기억도 희미해. 왜, 죽은 사람 묘까지 파헤칠 셈인가?”</p></blockquote>
+            <blockquote class="quote reveal"><p>“오래된 일이라 자잘한 건 기억도 희미해. 왜, 죽은 사람 묘까지 파헤칠 셈인가?”</p></blockquote>
             <p>굳이 사실을 감추는 사람은 아니었다. 제게 있었던 일쯤이야 누가 묻던 대강 일러주었으니. 다만 그날 무엇을 느꼈느냐, 괴로웠느냐, 아직 미련이 남았느냐고 캐묻기 시작하면 슬그머니 말끝이 흐려지는 것이다. 지난 일을 숨기지는 않으나 지나간 마음까지 남에게 헤집어 내놓아 보일 까닭은 없다 여기는 모양이었다.</p>
             <p>기실 제 일에는 이렇듯 범연하면서도 남의 낯빛을 읽는 데에는 제법 눈이 빨랐다. 소매 아래 감춘 상처며 한쪽으로 흐트러진 걸음, 평소보다 더딘 젓가락질까지. 모르는 체 지나치면 그만일 것을 한참 바라보다가 종내 혀를 차곤 했다.</p>
-            <blockquote class="quote"><p>“아픈 게 숨긴다고 어디 숨겨지겠나.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“아픈 게 숨긴다고 어디 숨겨지겠나.”</p></blockquote>
             <p>여상한 낯으로 꾸짖으며 다가오는 손에는 어느새 물이며 약이며 하는 것들이 들려 있었다. 하여 그와 가까워지는 일 자체는 그리 어렵지 않았다. 다만 어디까지 가까워졌는가를 가늠하는 것은 또 별개의 문제였으니, 겉문은 늘 활짝 열려 있는데도 안채까지 드는 길은 사뭇 멀었다.</p>
           </div>
         </div></div>
 
       <div class="chapter chapter--b"><div class="chapter__main">
-          <h3 class="chapter__title">不踰矩</h3>
-          <p class="chapter__tags">불유구 &nbsp;·&nbsp; 참견 · 수습</p>
+          <h3 class="chapter__title"><span class="swap"><span class="swap__han">不踰矩</span><span class="swap__ko">불유구</span></span></h3>
+          <p class="chapter__tags">참견 · 수습</p>
           <p class="chapter__gloss">법도와 분수를 넘지 아니한다</p>
           <div class="chapter__body prose">
             <p>남의 심사에는 함부로 발을 들이지 않았다. 말하기 싫다 하면 묻지 않고 홀로 있고 싶다 하면 자리도 곧잘 비켜주었다. 제 속내를 캐묻는 이를 달가워하지 않는 만큼 남의 내막에도 억지로 손대지 않았으니, 여기까지 보면 퍽 분별있는 사람이겠으나…</p>
             <p>문제는 일이 제 눈 앞에서 벌어질 때였다. 누가 금 간 담장을 굳이 타넘겠다 하면 처음에는 한마디쯤 일러둔다. 그쪽 돌이 약하다, 발을 잘못 디디면 떨어진다. 그래도 기어코 올라가겠다고 고집을 부리면 그때부터는 낯에 기막히다는 빛이 어리기 시작한다.</p>
-            <blockquote class="quote"><p>“ 이젠 친우가 없다 못해 바닥과 인연을 맺을 셈인가?”</p></blockquote>
+            <blockquote class="quote reveal"><p>“ 이젠 친우가 없다 못해 바닥과 인연을 맺을 셈인가?”</p></blockquote>
             <p>말린다고 듣지 않을 자를 붙잡아 끌어내릴 위인은 아니었다. 대신 아래에 남아 있다가 정말로 떨어지기라도 하면 곧장 받아내는 쪽이었으니, 운의 참견은 대개 그러하였다. 돌아가는 꼴이 영 그릇되었다 싶으면 슬쩍 손을 얹고, 여럿이 매달려 반나절을 허비할 일을 제 손으로 끝낼 수 있다 싶으면 종내 일을 넘겨받는다. 남을 제 뜻대로 부리고 싶은 욕심이라기보다는 흐트러진 판을 흐트러진 채 내버려두는 것이 영 마뜩잖은 성미였다.</p>
             <p>그런 그의 면모는 월영에서도 크게 다르지 않았는데, 사람 하나 두들겨 패고 돌아온 자가 의기양양하여 죽이지는 않았다 변명이라도 하면,</p>
-            <blockquote class="quote"><p>“장하네.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“장하네.”</p></blockquote>
             <p>한 번 고개를 끄덕였다가,</p>
-            <blockquote class="quote"><p>“반쯤 죽인 것은 공덕이라도 되는 줄 알았어.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“반쯤 죽인 것은 공덕이라도 되는 줄 알았어.”</p></blockquote>
             <p>하며 곧 혀를 차대었다.</p>
             <p>그렇다고 성현 흉내를 내며 사람을 교화하려 드는 것은 아니다. 죄짓지 말라 훈계할 위인이었으면 애초에 월영에 그리 오래 남지도 못했을 터. 제가 벌인 일은 제가 거둘 것. 남에게 화를 떠넘기지는 말 것. 그저 그 정도의 셈속만은 제법 엄정하였다.</p>
           </div>
         </div><p class="chapter__glyph" aria-hidden="true">矩</p></div>
 
       <div class="chapter chapter--c"><div class="chapter__main">
-          <span class="chapter__cord" aria-hidden="true"></span><h3 class="chapter__title">會者定離</h3>
-          <p class="chapter__tags">회자정리 &nbsp;·&nbsp; 진중 · 잔정</p>
+          <span class="chapter__cord" aria-hidden="true"></span><h3 class="chapter__title"><span class="swap"><span class="swap__han">會者定離</span><span class="swap__ko">회자정리</span></span></h3>
+          <p class="chapter__tags">진중 · 잔정</p>
           <p class="chapter__gloss">만난 자는 필시 헤어짐이 있다.</p>
           <p class="gloss">會者定離 회자정리</p><div class="chapter__body prose">
             <p>정이 얕은 사람이라 하기엔 자잘한 것을 지나치게 잘 기억하였다.</p>
             <p>어느 이가 매운 것을 못 먹었는지, 누가 오른손보다 왼손을 먼저 쓰는지. 지난번에 베인 자리가 아직 덜 아물지는 않았는가. 무심히 들었던 말도 몇 달 뒤 엉뚱한 자리에서 다시 꺼내곤 하니, 정작 본인은 기억하려 애쓴 적 없노라 한다.</p>
             <p>그러면서 떠나는 이를 붙잡는 일에는 영 재주가 없었다.</p>
             <p>열두 살에는 가족과 생이별 하였고 열일곱에는 스승을 잃었으며, 운림에서 새로 얻은 인연마저 종국에는 뿔뿔이 흩어지고 말았으니. 만난 이가 떠나는 일을 천지간 으레 있는 이치처럼 여기게 된 것도 그 때문이었을까.</p>
-            <blockquote class="quote"><p>“가겠다는데 어찌 잡아.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“가겠다는데 어찌 잡아.”</p></blockquote>
             <p>싫어졌다면 더더욱 붙들 까닭 없다는 말이었다. 그런데도 상대가 정녕 등을 돌리고 나면 그 그림자가 시야에서 다 사라질 때까지 자리를 뜨지 않는 사람 또한 운이었다. 그러고서도 지나간 것은 지나간 것이라 잘라 말한다. 어머니와 아우는 이제 남이나 진배없다 하고, 운림 역시 오래전에 등진 곳일 뿐이라 이른다. 그런 주제에 머리에는 스물아홉 해 묵은 푸른 매듭이 달려있고. 해지면 기우고 찢어지면 덧대어, 이제는 본래 천이 어디까지 남았는지조차 모를 물건을 끝끝내 버리지 않았다. 누군가 그 모순을 들추기라도 하면 그것과 이것은 다른 일이라며 슬며시 시선을 피하지만… 그 둘을 정말 명백히 갈라 설명할 수 있었더라면, 어쩌면 진즉 그 매듭부터 버렸을지도 모르는 일이다.</p>
           </div>
         </div></div>
@@ -164,7 +176,7 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">四</span>
-        <h2 class="head__han" id="h-succ">傳承</h2>
+        <h2 class="head__han reveal" id="h-succ"><span class="swap"><span class="swap__han">傳承</span><span class="swap__ko">전승</span></span></h2>
         <p class="head__ko">전승한 요괴 또는 신수 종류</p>
       </div>
 
@@ -186,7 +198,7 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">五</span>
-        <h2 class="head__han" id="h-ability">渴脈</h2>
+        <h2 class="head__han reveal" id="h-ability"><span class="swap"><span class="swap__han">渴脈</span><span class="swap__ko">갈맥</span></span></h2>
         <p class="head__ko">그릇과 이능력</p>
       </div>
 
@@ -202,7 +214,7 @@
         <div class="rail__item">
           <div class="rail__mark" aria-hidden="true">一</div>
           <div class="rail__content">
-            <h3 class="rail__title">生體<span class="ko">一. 생체</span></h3>
+            <h3 class="rail__title"><span class="swap"><span class="swap__han">生體</span><span class="swap__ko">생체</span></span><span class="ko">一. 생체</span></h3>
             <div class="rail__body prose">
               <p>사람도 짐승도 물을 품은 육신인즉, 갈맥을 피하지 못한다. 다만 생명이 붙은 것은 스스로 기혈을 돌리는 까닭에 마른 나무나 천 따위보다 훨씬 더디게 영향을 받았다.</p>
               <p>거리가 가까울수록 힘은 짙어지고, 살이 맞닿으면 그 속도 또한 배가되었다. 닿는 면이 넓을수록 효과가 크니 손끝보다 손바닥이, 손목보다 팔과 몸통이 더욱 위협적이었다.</p>
@@ -215,7 +227,7 @@
         <div class="rail__item">
           <div class="rail__mark" aria-hidden="true">二</div>
           <div class="rail__content">
-            <h3 class="rail__title">水<span class="ko">二. 물</span></h3>
+            <h3 class="rail__title"><span class="swap"><span class="swap__han">水</span><span class="swap__ko">물</span></span><span class="ko">二. 물</span></h3>
             <div class="rail__body prose">
               <p>수계 파수의 힘이라 하여 갈맥 앞에서 예외가 되지는 않았다.</p>
               <p>다가오는 수류의 세를 깎고, 수막을 얇게 하며, 자욱한 물안개를 걷어낼 수 있다. 다만 동급의 파수가 온힘을 다해 쏟아붓는 물을 손짓 한 번으로 죄 말려버릴 만큼 절대적인 힘은 아니었다. 상대가 끊임없이 물을 불러낸다면 운 또한 그만큼 계속 기를 소모해야 했다.</p>
@@ -228,7 +240,7 @@
         <div class="rail__item">
           <div class="rail__mark" aria-hidden="true">三</div>
           <div class="rail__content">
-            <h3 class="rail__title">止血<span class="ko">三. 피를 멎게 하는 법</span></h3>
+            <h3 class="rail__title"><span class="swap"><span class="swap__han">止血</span><span class="swap__ko">지혈</span></span><span class="ko">三. 피를 멎게 하는 법</span></h3>
             <div class="rail__body prose">
               <p>상처를 낫게 하지는 못하되, 흐르는 피를 멎게 할 수는 있었다. 흘러나온 피와 상처 언저리의 물기를 억지로 말려 피를 굳히는 방식이다. 위급할 때에는 목숨을 붙들어둘 수 있으나, 상처 주변의 살까지 함께 상하며 고통도 심하고 흉 역시 쉬이 남았다.</p>
               <p>그런 까닭에 운은 이를 두고 치유라 부르는 것을 썩 달가워하지 않았다. 살아 있게 만드는 것과 온전히 낫게 하는 것은 엄연히 다른 일이므로.</p>
@@ -239,22 +251,22 @@
         <div class="rail__item">
           <div class="rail__mark" aria-hidden="true">副</div>
           <div class="rail__content">
-            <h3 class="rail__title">副作用<span class="ko">부작용</span></h3>
+            <h3 class="rail__title"><span class="swap"><span class="swap__han">副作用</span><span class="swap__ko">부작용</span></span><span class="ko">부작용</span></h3>
             <div class="rail__body prose">
               <p>갈증은 상시. 그 위에 능력 사용량에 따라 더해진다.</p>
               <div class="stage">
-                <p class="stage__label">平時 <span class="sr-only">평시</span></p>
+                <p class="stage__label"><span class="swap"><span class="swap__han">平時</span><span class="swap__ko">평시</span></span></p>
                 <p>목이 쉬고 입술이 튼다. 눈이 쉬이 말라 볕을 오래 보기가 괴롭다. 오랫동안 밭일을 한 이들처럼 손끝이 쩍쩍 갈라지는 일도 드물지 않다. 운이 볕 좋은 날 본래 목소리를 아끼는 것도 대개 이 때문이었다.</p>
               </div>
               <div class="stage">
-                <p class="stage__label">過用 <span class="sr-only">과용</span></p>
+                <p class="stage__label"><span class="swap"><span class="swap__han">過用</span><span class="swap__ko">과용</span></span></p>
                 <p>힘을 지나치게 끌어내면 먼저 코피가 나고 몸 안쪽으로 열이 오른다. 이윽고 어지럼이 들며 손끝이 떨리고, 종아리와 손가락에 느닷없는 경련이 찾아든다.</p>
                 <p>물을 마시면 얼마간 가라앉으나, 기를 계속 소모하면 채우는 속도보다 마르는 속도가 앞선다. 그때부터는 물을 들이켜는 일조차 임시변통에 지나지 않았다.</p>
               </div>
               <div class="stage">
               <div class="toggle burst">
             <button class="toggle__head">
-              <span class="toggle__title"><span class="han">暴走</span><span class="ko">폭주</span><span class="lead">선을 넘으면 몸에 심한 열이 오르고 각혈과 탈수가 뒤따른다.</span></span>
+              <span class="toggle__title"><span class="han"><span class="swap"><span class="swap__han">暴走</span><span class="swap__ko">폭주</span></span></span><span class="lead">선을 넘으면 몸에 심한 열이 오르고 각혈과 탈수가 뒤따른다.</span></span>
               <span class="toggle__ind" aria-hidden="true"></span>
             </button>
             <div class="toggle__panel"><div class="toggle__inner"><div class="toggle__body prose">
@@ -277,14 +289,14 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">六</span>
-        <h2 class="head__han" id="h-chron">年代</h2>
+        <h2 class="head__han reveal" id="h-chron"><span class="swap"><span class="swap__han">年代</span><span class="swap__ko">연대</span></span></h2>
         <p class="head__ko">기타</p>
       </div>
 
       <div class="tl">
         <div class="tl__item toggle ">
           <div class="tl__age"></div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <button class="toggle__head">
               <span class="toggle__title"><span class="han">誕生</span><span class="ko">탄생과 유년</span><span class="lead">운이 태어난 곳은 서라벌과는 제법 거리가 있는 촌락이었다.</span></span>
@@ -295,10 +307,10 @@
               <p>다만 그해에 한 가지 특이한 것이 있다면, 비가 귀하였다.</p>
               <p>처음 한 해는 흉년이라 하였다. 이듬해까지 하늘이 야박하자 올해 팔자가 몹시 사납다며 탄식하였고, 삼 년째에도 장마가 비껴가자 사람들의 입과 눈은 차차 다른 것을 찾기 시작하였다. 논바닥은 거북이 등껍질처럼 죽죽 갈라지고, 잘 여물지 못한 볏대는 누렇게 말라 고개를 숙였다. 샘은 얕아지고 우물에는 긴 두레박을 내려도 흙내 섞인 부연 물이나 겨우 올라왔다.</p>
               <p>사람이 먹고살 만하면 하늘을 탓하고 말 것을, 궁핍이 오래되면 으레 가까운 데서 허물을 찾는 법. 마침 그 무렵에 태어난 아이 하나가 있었다. 처음에는 늙은이 몇이 우스갯소리처럼 입에 올렸다 한다.</p>
-              <blockquote class="quote"><p>“저 집 아이가 난 뒤로 하늘이 영 메말랐구먼.”</p></blockquote>
+              <blockquote class="quote reveal"><p>“저 집 아이가 난 뒤로 하늘이 영 메말랐구먼.”</p></blockquote>
               <p>그러나 농담은 두세 사람의 입을 건너면 풍설이 되고, 풍설이 오래 묵으면 당사자의 팔자가 된다. 그렇게 어느새 운은 재수 사나운 아이, 혹은 물을 몰아낸 아이로 불리었다.</p>
               <p>그런 그가 세 살 되던 무렵이었을까, 탁발하던 승려 하나가 마을을 지나다 아이를 유심히 바라보더니 입을 열었다. 어린것에게 마른 기운이 붙었다느니, 물 가까이 두는 편이 좋겠다느니 하는 말들. 지금으로서는 그 말이 사람을 달래려 지어낸 방편이었는지 아니면 정말 무언가를 보았는지 알 길이 없었다. 그러나 운의 어머니에게는 그 진위가 그리 중요하지 않았던 듯하다. 궁핍한 사람이야 볏짚 한 오라기에도 손을 내미는 법이니. 얼마 없는 풀로 쑨 죽 한바가지를 내밀며 간청하자 승려는 쪽빛 천을 길게 찢어 매듭을 지어주며 두 가지를 일렀다고 한다.</p>
-              <blockquote class="quote"><p>물을 가까이 하게 하시오.</p><p>이 매듭만큼은 쉬이 끊어지지 않도록 하고.</p></blockquote>
+              <blockquote class="quote reveal"><p>물을 가까이 하게 하시오.</p><p>이 매듭만큼은 쉬이 끊어지지 않도록 하고.</p></blockquote>
               <p>그리고 떠난 승려의 말을 따라 행한지 몇 개월도 되지 않은 이듬해 봄, 공교롭게도 비가 내리기 시작했다.</p>
               <p>그러나 그것으로 일이 잠잠해졌느냐 하면 도리어 반대였다. 액막이를 하고서야 비가 내렸으니 애초에 아이에게 무언가 있었던 것이 아니냐는 소리가 따라붙었다. 어린 운에게는 당최 알 수 없는 일이었다. 태어난 것 말고는 한 일이 없건만.</p>
             </div></div></div>
@@ -307,7 +319,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">六歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">六歲</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">父離</span><span class="ko">집안과 이별 (상)</span><span class="lead">운의 아우는 운보다 다섯 해 늦게 태어났다.</span></span>
@@ -323,7 +335,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">十二歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">十二歲</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">離別</span><span class="ko">집안과 이별 (하)</span><span class="lead">먹을 것이 귀해지면 어미는 으레 제 몫부터 덜어내기 마련이었다.</span></span>
@@ -341,7 +353,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">十三歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">十三歲</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">師</span><span class="ko">師 스승</span><span class="lead">열세 해를 먹은 운이 그 사람을 만났을 적에는 이미 집도 고향도 한참 뒤에 두고 온 뒤였다.</span></span>
@@ -358,16 +370,16 @@
               <p>그러나 한참 뒤에 소식이 궁금하여 찾아본 그의 귀에 들려온 것은 뜻밖의 부고 소식이었다.</p>
               <p>훈련 중이었다는 말도 있었고, 변방에 내보냈다는 이야기도 있었다. 누구의 말이 참이었는지는 스승조차 끝내 몰랐다. 이미 죽은 아이 하나의 행적을 두고 높은 이들이 오래 입씨름할 까닭도 없었으리라.</p>
               <p>그 일을 계기로 그는 화랑을 떠났다고 한다. 분기탱천하여 하루아침에 문을 걷어찬 것인지, 오랜 세월 두고 마음이 식어 마침내 등을 돌린 것인지 운은 묻지 않았다. 스승 또한 자세히 일러주지 않았다. 다만 술이 조금 들어간 날이면 때때로,</p>
-              <blockquote class="quote"><p>“사람을 살린다고 데려가서는 쓸 곳부터 헤아리더구나.”</p></blockquote>
+              <blockquote class="quote reveal"><p>“사람을 살린다고 데려가서는 쓸 곳부터 헤아리더구나.”</p></blockquote>
               <p>하고는 웃었다. 웃음이라기보다는 혀끝에 남은 쓴맛을 삼키는 낯이었지만.</p>
               <p>운은 그 사람에게 검을 배웠다.</p>
               <p>그러나 훗날 돌이켜보면 칼 쓰는 법보다 칼을 내려놓는 법을 더 오래 배웠던 듯싶다. 사흘 연달아 검식을 되풀이시키다가도 날씨가 좋으면 돌연 연습을 거두었다. 산 너머 경치가 좋다며 길을 나섰고, 물 맑은 곳을 만나면 버선부터 벗었다. 길에서 만난 장사치의 넋두리를 한참 듣기도 하고, 주막에서 싸움이 나면 말려놓은 뒤 어느 쪽 술이 더 나았는지를 논하였다.</p>
               <p>운이 어려서는 그런 짓이 무슨 수련이냐며 볼멘소리를 한 적도 있었다. 그러자 스승이 검집으로 어린 제자의 어깨를 툭 쳤다.</p>
-              <blockquote class="quote"><p>“칼끝만 들여다보면 사람도 벨 자리부터 보이느니라. 눈을 좀 넓혀두어.”</p></blockquote>
+              <blockquote class="quote reveal"><p>“칼끝만 들여다보면 사람도 벨 자리부터 보이느니라. 눈을 좀 넓혀두어.”</p></blockquote>
               <p>그 말의 뜻을 운이 그때부터 온전히 알아들었던 것은 아니었을 테다.</p>
               <p>허나 세월이 스무 해 가까이 흐른 지금도 한곳에 오래 묵으면 괜스레 산길이 궁금하고, 물 좋은 곳을 지나치면 반나절쯤 눌러앉고 싶어진다. 스승에게 붙은 화랑의 흔적 가운데 운이 기꺼이 받아 가진 몇 안 되는 것. 산수 유람의 버릇이 바로 그것이었다.</p>
               <p>그리고 스승이 운림을 입에 올리기 시작한 것도 그 무렵이었다. 그 가운데에서도 유화라는 이름을 여러 번 들었다. 일찍이 제 목숨을 구해준 사람이라 하였고, 저와 생각이 늘 같지는 않아도 적어도 사람을 사람 아닌 것으로 셈하지 않는 자라 하였다. 운림에 괴이한 이들이 적지 않다며 흉을 보다가도 마지막에는 늘 같은 말을 덧붙였다고.</p>
-              <blockquote class="quote"><p>“정 갈 데가 없어지는 날이 오거든 그 사람 이름이나 기억해두어라.”</p></blockquote>
+              <blockquote class="quote reveal"><p>“정 갈 데가 없어지는 날이 오거든 그 사람 이름이나 기억해두어라.”</p></blockquote>
               <p>그때의 운은 코웃음을 쳤다. 갈 데가 아주 없어지는 날이라는 것이 설마 또 오겠느냐고. 그러나 세상은 그런 오만을 오래 두고 보아주지 않았다.</p>
             </div></div></div>
           </div>
@@ -375,7 +387,7 @@
 
         <div class="tl__item toggle tl__item--break">
           <div class="tl__age">十七歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">十七歲</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">脫胎</span><span class="ko">脫胎 탈태</span><span class="lead">열일곱 되던 해의 어느 밤.</span></span>
@@ -396,7 +408,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">其後</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">其後</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">雲林</span><span class="ko">雲林 운림</span><span class="lead">도망이라는 것도 오래 하면 일상이 된다는 사실을 아는 이가 얼마나 될까.</span></span>
@@ -416,7 +428,7 @@
 
         <div class="tl__item toggle tl__item--fade">
           <div class="tl__age">二十二歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">二十二歲</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">喪</span><span class="ko">유화가 죽고</span><span class="lead">사람은 앓다가도 죽는다.</span></span>
@@ -440,7 +452,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">其後</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">其後</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">出雲林 · 行旅</span><span class="ko">行旅 떠돈 세월</span><span class="lead">운림을 나온 뒤로는 한동안 어느 깃발 아래에도 이름을 걸지 않았다.</span></span>
@@ -461,7 +473,7 @@
 
         <div class="tl__item toggle ">
           <div class="tl__age">其後</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">其後</p><button class="toggle__head">
               <span class="toggle__title"><span class="han">月影</span><span class="ko">月影 월영</span><span class="lead">월영을 좋아하여 찾아든 것은 아니었다.</span></span>
@@ -482,10 +494,10 @@
 
         <div class="tl__item tl__item--now">
           <div class="tl__age">三十二歲</div>
-          <div class="tl__axis" aria-hidden="true"><span class="tl__dot"></span></div>
+          <div class="tl__axis reveal" aria-hidden="true"><span class="tl__dot"></span></div>
           <div class="tl__main">
             <p class="tl__mobile-age">三十二歲</p>
-            <p class="tl__now">今</p>
+            <p class="tl__now"><span class="swap"><span class="swap__han">今</span><span class="swap__ko">지금</span></span></p>
           </div>
         </div>
       </div>
@@ -493,27 +505,27 @@
   </section>
 
 
-  <!-- ══ 七. 日常 / 好惡·習 ═════════════════════════════ -->
+  <!-- ══ 七. 日常 ═══════════════════════════════════════ -->
   <section class="section" aria-labelledby="h-daily">
     <img class="stain stain--daily" src="assets/ink-3.png" alt="" aria-hidden="true">
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">七</span>
-        <h2 class="head__han" id="h-daily">日常</h2>
+        <h2 class="head__han reveal" id="h-daily"><span class="swap"><span class="swap__han">日常</span><span class="swap__ko">일상</span></span></h2>
         <p class="head__ko">기타</p>
       </div>
 
       <div class="group">
         <div class="group__rule"></div>
           <div class="entry">
-            <h3 class="entry__title">목소리</h3>
+            <h3 class="entry__title">聲<span class="ko">목소리</span></h3>
             <div class="entry__body prose">
             <p>사시사철 조금 쉰 음성. 원래의 음성은 제법 낮은 축이나 목 안쪽이 마른 탓에 끝소리가 쉬이 긁히고 갈라진다. 말을 오래 하면 점차 탁해지는 것도 예삿일. 운을 오래 본 이들은 으레 그것이 본래 목소리인 줄 안다.</p>
             </div>
           </div>
 
           <div class="entry">
-            <h3 class="entry__title">水, 물</h3>
+            <h3 class="entry__title">水<span class="ko">水, 물</span></h3>
             <div class="entry__body prose">
             <p>그에게 물은 기호품이기에 앞서 생필품이었다. 허리에 물주머니가 하나만 달린 날은 드물고, 먼 길을 갈 적에는 두세 개씩 챙긴다. 낯선 곳에 들면 숙처보다 먼저 우물이며 개울의 위치부터 눈여겨보는 버릇도 있다. 길을 잃어도 물이 어디 있는지만 알면 어떻게든 된다는 심산.</p>
             <p>남의 물을 탐내지 않기에 남이 제 물을 함부로 마시는 것도 썩 좋아하지 않는다.</p>
@@ -524,7 +536,7 @@
           </div>
 
           <div class="entry">
-            <h3 class="entry__title">길라</h3>
+            <h3 class="entry__title">吉羅<span class="ko">길라</span></h3>
             <div class="entry__body prose">
             <p>파수인 이상 길라와 척질 까닭이 없다. 하물며 갈맥처럼 평소부터 제 그릇을 갉는 힘이라면 더욱 그러하다. 공명이 필요한 때가 있다는 사실을 부끄럽게 여기지도 않으며, 괜한 자존심으로 끝까지 버티다가 일을 내는 쪽을 오히려 어리석다 여긴다.</p>
             <p>그렇다고 아무에게나 제 기를 맡기는 것은 별개의 일. 공명은 육신의 병을 고치는 일보다 사람에게 제 취약한 곳을 잠시간 내맡기는 것에 가까우니, 가능하다면 손에 익은 상대를 찾는다.</p>
@@ -532,16 +544,16 @@
           </div>
 
           <div class="entry">
-            <h3 class="entry__title">수계 파수</h3>
+            <h3 class="entry__title">水系<span class="ko">수계 파수</span></h3>
             <div class="entry__body prose">
             <p>길라와 별개로 수계 파수에게도 호의가 한 술 더 얹힌다. 그들이 부리는 물 자체가 운에게 편한 환경을 만드는 까닭. 처음 만난 사람이 수계라 하면 이름 한 번 더 기억하고, 말을 한마디쯤 더 붙인다. 곁에 오래 있어도 평소보다 쉽게 자리를 뜨지 않는다.</p>
             <p>이를 두고 편애라 하면 운은 대개 부정한다.</p>
-            <blockquote class="quote"><p>“편애라니. 궁합이 좋은 것뿐이지.”</p></blockquote>
+            <blockquote class="quote reveal"><p>“편애라니. 궁합이 좋은 것뿐이지.”</p></blockquote>
             </div>
           </div>
 
           <div class="entry">
-            <h3 class="entry__title">잡다한 용처</h3>
+            <h3 class="entry__title">雜用<span class="ko">잡다한 용처</span></h3>
             <div class="entry__body prose">
             <p>갈맥이 싸울 때만 쓸모 있는 재주는 아니었다. 젖은 장작을 말려달라, 비 맞은 짐을 좀 손봐달라, 빨아놓은 옷이 내일까지 마르겠느냐. 월영에 오래 있다 보면 별 청이 다 들어온다.</p>
             <p>처음 몇 번은 황당해하였으나 이제는 그러려니 한다. 물론 순순히 해주지는 않고, “내가 불 때는 아궁이인 줄 알아?” 하며 한소리 늘어놓은 뒤 결국 말려준다. 덕택에 장마철이면 의외로 인기가 좋은 편. 다만 술 취한 자가 재미로 제 옷자락을 적시고 말려달라 하면 사정이 영 달라질 것이다.</p>
@@ -554,7 +566,7 @@
         <p class="group__label">好惡 &middot; 習</p>
         <div class="group__rule"></div>
           <div class="entry">
-            <h3 class="entry__title">호오</h3>
+            <h3 class="entry__title">好惡<span class="ko">호오</span></h3>
             <div class="entry__body prose">
               <p class="sublabel">좋아하는 것.</p>
               <p>비 오는 날. 먹구름 낀 하늘. 강과 계곡. 탁족과 목욕. 산길. 국물 넉넉한 음식. 쓸데없이 말이 길지 않은 사람. 맡은 일을 제대로 끝내는 사람. 수계 파수. 스승에게서 배운 검을 손보는 시간도 제법 좋아한다.</p>
@@ -587,7 +599,10 @@
   <!-- ══ 엔딩 ═══════════════════════════════════════════ -->
   <section class="ending" aria-label="맺음">
     <img class="ending__silhouette" src="assets/character.png" alt="" aria-hidden="true">
-    <p class="ending__quote">“가겠다는데 어찌 잡아.”</p>
+    <div class="ending__mark">
+      <span class="ending__han">雲</span>
+      <span class="seal-wrap seal-wrap--lg"><svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><rect x="4.5" y="4.5" width="111" height="111" rx="3" fill="none" stroke="currentColor" stroke-width="7"/><text x="60" y="62" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif KR, Nanum Myeongjo, serif" font-weight="700" font-size="74" fill="currentColor">雲</text></svg></span>
+    </div>
   </section>
 
 
@@ -596,7 +611,7 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">八</span>
-        <h2 class="head__han" id="h-pref">好惡</h2>
+        <h2 class="head__han reveal" id="h-pref"><span class="swap"><span class="swap__han">好惡</span><span class="swap__ko">호오</span></span></h2>
         <p class="head__ko">캐릭터 및 오너 선호/기피플</p>
       </div>
 
@@ -621,8 +636,7 @@
       <p class="private-note">아래는 비공개 사항입니다.</p>
       <div class="head">
         <span class="head__no">九</span>
-        <h2 class="head__han" id="h-hidden">非說</h2>
-        <p class="head__ko">비설</p>
+        <h2 class="head__han reveal" id="h-hidden"><span class="swap"><span class="swap__han">非說</span><span class="swap__ko">비설</span></span></h2>
       </div>
       <div class="blank"><p>&mdash;</p></div>
     </div>
@@ -634,8 +648,8 @@
     <div class="wrap editorial">
       <div class="head">
         <span class="head__no">十</span>
-        <h2 class="head__han" id="h-form">確認</h2>
-        <p class="head__ko">연락 가능한 계정 &middot; 성인인증 &middot; 통합문서 확인</p>
+        <h2 class="head__han reveal" id="h-form"><span class="swap"><span class="swap__han">確認</span><span class="swap__ko">확인</span></span></h2>
+        <p class="head__ko">연락 가능한 계정 · 성인인증 · 통합문서 확인</p>
       </div>
 
       <div class="form-block">
@@ -687,6 +701,8 @@
   <div class="wrap"><p class="colophon">月影 保管 &middot; 一品 把守 &middot; 雲</p></div>
 
 </main>
+
+<button class="totop" type="button" aria-label="맨 위로">上</button>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="전신 이미지">
   <button class="lightbox__close" type="button">닫기 ESC</button>

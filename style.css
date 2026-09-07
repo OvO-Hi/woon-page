@@ -113,7 +113,7 @@ img{ max-width:100%; display:block; }
   transform-origin:left center;
   transition:transform .85s var(--ease);
 }
-.head:hover .head__han::after{ transform:scaleX(1); }
+
 .head__ko{
   font-family:var(--sans);
   font-weight:300;
@@ -233,7 +233,7 @@ img{ max-width:100%; display:block; }
   object-fit:contain;
 }
 @media (min-width:900px){
-  .hero__figure img{ height:86vh; max-height:900px; }
+  .hero__figure img{ height:89vh; max-height:1000px; }
 }
 
 .hero__scroll{
@@ -262,7 +262,7 @@ img{ max-width:100%; display:block; }
 .face__figure{ margin:0; position:relative; }
 .face__crop{
   width:100%;
-  height:420px;
+  aspect-ratio:1500 / 2072;      /* character-bust.png 원본 비율 */
   background-color:var(--ash);
   background-image:url("assets/paper.png");
   background-size:640px auto;
@@ -272,16 +272,12 @@ img{ max-width:100%; display:block; }
   padding:0;
   display:block;
 }
-@media (min-width:768px){ .face__crop{ height:620px; } }
 .face__crop img{
   width:100%; height:100%;
   object-fit:cover;
-  object-position:50% 0%;
-  transform:scale(1.62);            /* 얼굴~상반신까지 당겨서 */
-  transform-origin:50% 9%;
-  transition:transform 1.1s var(--ease);
+  transition:transform 1.2s var(--ease);
 }
-.face__crop:hover img{ transform:scale(1.66); }
+.face__crop:hover img{ transform:scale(1.025); }
 .face__crop:focus-visible{ outline:1px solid var(--indigo); outline-offset:4px; }
 
 .face__notes{
@@ -310,23 +306,20 @@ img{ max-width:100%; display:block; }
 }
 
 .dl{
-  display:inline-flex;
-  align-items:center;
-  gap:.9em;
-  margin-top:38px;
-  font-family:var(--sans);
+  display:inline-block;
+  margin-top:34px;
+  font-family:var(--serif);
   font-weight:400;
-  font-size:15px;
-  letter-spacing:.1em;
-  color:var(--paper);
-  background:var(--deepblue);
-  border:1px solid var(--deepblue);
+  font-size:14px;
+  letter-spacing:.14em;
+  color:var(--indigo);
+  background:transparent;
+  border:1px solid var(--indigo);
   text-decoration:none;
-  padding:16px 32px;
-  transition:background .4s var(--ease);
+  padding:11px 26px;
+  transition:background .55s var(--ease);
 }
-.dl:hover,.dl:focus-visible{ background:var(--indigo); border-color:var(--indigo); }
-.dl__mark{ width:1px; height:15px; background:currentColor; opacity:.55; }
+.dl:hover,.dl:focus-visible{ background:rgba(76,94,132,.10); }
 
 /* 라이트박스 */
 .lightbox{
@@ -1131,4 +1124,254 @@ html.no-js .lightbox{ display:none; }
     transition-delay:0ms !important;
     animation-duration:.001ms !important;
   }
+}
+
+/* ============================================================
+   추가 — 내비게이션 · 한자 전환 · 진입 모션 · 낙관
+   ============================================================ */
+
+/* ── 버그 수정: 후반부 토글 항목이 180px 칼럼에 갇히던 문제 ─ */
+.entry--toggle{ display:block; }
+.entry__title .ko{
+  display:block;
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.16em;
+  color:var(--earth);
+  margin-top:.45em;
+}
+
+/* ── 外貌 이미지 좌측으로 ─────────────────────────────── */
+@media (min-width:900px){
+  .face__figure{ margin-left:-40px; }
+}
+
+/* ── 한자 ↔ 한글 ─────────────────────────────────────── */
+.swap__ko{
+  display:block;
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:12.5px;
+  letter-spacing:.16em;
+  color:var(--earth);
+  margin-top:.5em;
+}
+/* 이미 한글이 병기된 곳은 중복 제거 */
+.rail__title .swap__ko,
+.entry__title .swap__ko,
+.toggle__title .swap__ko,
+.index .swap__ko{ display:none; }
+
+@media (hover:hover) and (pointer:fine){
+  .swap{ position:relative; display:inline-block; }
+  .swap__han{ display:inline-block; transition:opacity .4s var(--ease); }
+  .swap__ko{
+    display:inline-block !important;
+    position:absolute; left:0; top:0; margin:0;
+    font-family:inherit; font-weight:inherit; font-size:inherit;
+    letter-spacing:inherit; color:inherit; white-space:nowrap;
+    opacity:0;
+    transition:opacity .4s var(--ease);
+  }
+  .swap:hover .swap__han{ opacity:0; }
+  .swap:hover .swap__ko{ opacity:1; }
+}
+
+/* ── 우측 세로 인덱스 ────────────────────────────────── */
+.index{
+  position:fixed;
+  right:24px; top:50%;
+  transform:translateY(-50%);
+  z-index:50;
+}
+.index ul{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; align-items:center;
+  gap:26px;
+}
+.index a{
+  display:flex; align-items:center; gap:11px;
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:14px;
+  letter-spacing:.2em;
+  color:var(--earth);
+  text-decoration:none;
+  transition:color .55s var(--ease);
+}
+.index__dot{
+  width:4px; height:4px; border-radius:50%;
+  background:currentColor; opacity:.45;
+  flex:0 0 auto;
+  transition:opacity .55s var(--ease), transform .55s var(--ease);
+}
+.index a:hover{ color:var(--indigo); }
+.index a.is-active{ color:var(--indigo); }
+.index a.is-active .index__dot{ opacity:1; transform:scale(1.7); }
+@media (max-width:1100px){ .index{ display:none; } }
+
+/* ── 맨 위로 ─────────────────────────────────────────── */
+.totop{
+  position:fixed;
+  right:26px; bottom:26px;
+  z-index:50;
+  width:46px; height:46px;
+  border-radius:50%;
+  background:transparent;
+  border:1px solid var(--rule);
+  color:var(--indigo);
+  font-family:var(--serif);
+  font-size:15px;
+  letter-spacing:.05em;
+  cursor:pointer;
+  opacity:0; visibility:hidden;
+  transition:opacity .6s var(--ease), visibility .6s, background .45s var(--ease);
+}
+.totop.is-on{ opacity:1; visibility:visible; }
+.totop:hover{ background:rgba(76,94,132,.10); }
+.totop:focus-visible{ outline:1px solid var(--indigo); outline-offset:3px; }
+
+/* ── 스크롤 진행 — 쪽빛 실 ───────────────────────────── */
+.thread{
+  position:fixed;
+  left:0; top:0; bottom:0;
+  width:1px;
+  z-index:55;
+  background:rgba(76,94,132,.10);
+  pointer-events:none;
+}
+.thread span{
+  display:block;
+  width:100%; height:0;
+  background:var(--indigo);
+  opacity:.5;
+}
+
+/* ── 낙관(落款) ──────────────────────────────────────── */
+.seal-wrap{
+  display:inline-block;
+  color:var(--deepblue);
+  opacity:.85;
+  transform:rotate(-2deg);
+  line-height:0;
+}
+.seal{ width:100%; height:auto; display:block; }
+.seal-wrap--lg{ width:clamp(52px,6.5vw,80px); }
+.seal-wrap--sm{ width:20px; vertical-align:-4px; margin-right:9px; opacity:.7; }
+
+/* ── 엔딩 ────────────────────────────────────────────── */
+.ending__mark{
+  position:relative; z-index:1;
+  display:flex; align-items:center;
+  gap:clamp(22px,4vw,52px);
+}
+.ending__han{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(92px,16vw,190px);
+  line-height:1;
+  letter-spacing:.04em;
+  color:var(--ink);
+}
+
+/* ── 身元 界行 — 아주 연한 세로 괘선 ─────────────────── */
+.record{
+  background-image:repeating-linear-gradient(to right,
+    transparent 0, transparent calc(20% - 1px),
+    var(--hair2) calc(20% - 1px), var(--hair2) 20%);
+}
+
+/* ── 진입 모션 ───────────────────────────────────────── */
+/* 제목: 밑줄이 왼→오로 그어진 뒤 글자가 떠오름 */
+.head__han::after{ transform:scaleX(0); }
+.head__han.is-in::after{
+  transform:scaleX(1);
+  transition:transform .6s cubic-bezier(.22,.61,.36,1);
+}
+.head__han > .swap{ opacity:0; }
+.head__han.is-in > .swap{
+  opacity:1;
+  transition:opacity .7s var(--ease) .45s;
+}
+
+/* 타임라인 축: 위에서 아래로 그려져 내려감 */
+.tl__axis::before{ transform:scaleY(0); transform-origin:top center; }
+.tl__axis.is-in::before{
+  transform:scaleY(1);
+  transition:transform .9s cubic-bezier(.22,.61,.36,1);
+}
+.tl__dot{ opacity:0; }
+.tl__axis.is-in .tl__dot{ opacity:1; transition:opacity .45s var(--ease) .55s; }
+
+/* 인용: 쪽빛 선이 자라난 뒤 텍스트 페이드인 */
+.quote{ border-left:0; position:relative; }
+.quote::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:1px;
+  background:var(--rule);
+  transform:scaleY(0);
+  transform-origin:top center;
+}
+.quote.is-in::before{
+  transform:scaleY(1);
+  transition:transform .6s cubic-bezier(.22,.61,.36,1);
+}
+.quote p{ opacity:0; transform:translateY(8px); }
+.quote.is-in p{
+  opacity:1; transform:none;
+  transition:opacity .6s var(--ease) .36s, transform .6s var(--ease) .36s;
+}
+
+/* 히어로 먹 번짐: 로드 시 1회만 아주 천천히 */
+.stain--hero{ opacity:0; transform-origin:72% 28%; }
+html.js .stain--hero{ animation:inkspread 2s var(--ease) .25s forwards; }
+@keyframes inkspread{
+  from{ opacity:0; transform:scale(1); }
+  to  { opacity:.085; transform:scale(1.03); }
+}
+
+/* ── JS 미동작 대비 ──────────────────────────────────── */
+html.no-js .head__han > .swap,
+html.no-js .quote p,
+html.no-js .tl__dot{ opacity:1; }
+html.no-js .head__han::after,
+html.no-js .tl__axis::before,
+html.no-js .quote::before,
+html.no-js .quote p{ transform:none; }
+html.no-js .stain--hero{ opacity:.085; }
+html.no-js .index,
+html.no-js .totop,
+html.no-js .thread{ display:none; }
+
+/* ── 모션 최소화 존중 ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  .head__han > .swap,
+  .quote p,
+  .tl__dot{ opacity:1 !important; }
+  .head__han::after,
+  .tl__axis::before,
+  .quote::before,
+  .quote p{ transform:none !important; }
+  html.js .stain--hero{ animation:none !important; opacity:.085 !important; }
+}
+
+/* ── 우측 인덱스 자리 확보 (본문과 겹치지 않게) ───────── */
+@media (min-width:1101px){
+  main{ padding-right:78px; }
+}
+
+/* ── 外貌 2단 비율 조정 — 이미지가 지면을 삼키지 않게 ── */
+@media (min-width:900px){
+  .face{ grid-template-columns:minmax(0,440px) 1fr; gap:0 56px; }
+  .face__figure{ max-width:440px; margin-left:-40px; }
+  .face__text{ padding-left:0; }
+}
+@media (min-width:1400px){
+  .face{ grid-template-columns:minmax(0,490px) 1fr; }
+  .face__figure{ max-width:490px; }
 }
