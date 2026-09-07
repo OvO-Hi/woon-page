@@ -482,10 +482,13 @@ img{ max-width:100%; display:block; }
   background:linear-gradient(to bottom,transparent,var(--indigo) 22%,var(--indigo) 78%,transparent);
   opacity:.7;
 }
-@media (min-width:900px){
-  .chapter--c .chapter__body,
-  .chapter--c .chapter__gloss{ margin-left:auto; margin-right:0; }
-}
+/* 3장: 넓은 여백은 padding-left 로 만들고, 안의 요소들은
+   모두 같은 기준선에서 시작하게 둔다 (margin-left:auto 가
+   제목만 남기고 뜻풀이·본문을 오른쪽으로 밀어내던 문제) */
+.chapter--c .chapter__title,
+.chapter--c .chapter__tags,
+.chapter--c .chapter__gloss,
+.chapter--c .chapter__body{ margin-left:0; margin-right:auto; }
 
 /* ══ 5. 傳承 ═══════════════════════════════════════════ */
 .succ{ position:relative; }
