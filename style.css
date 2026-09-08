@@ -2155,17 +2155,28 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   .toggle.is-open .toggle__title .lead{ transform:none !important; }
 }
 
-/* ── 3장(磊落) 배경 워터마크 — 왼쪽 여백을 쓴다 ───────── */
+/* ── 3장(磊落) 배경 워터마크 ──────────────────────────
+   1장은 왼쪽 칼럼, 2장은 오른쪽 칼럼에 붙어 있으므로
+   3장은 제목 뒤에서 오른쪽 여백 쪽으로 흐르는 중앙-우측에 둔다.
+   잘림 없이 글자 전체가 보이도록 top 은 음수를 쓰지 않는다.
+   磊 는 石 셋이 쌓인 조밀한 글자라 和·不 보다 조금 작게 잡아야
+   시각 무게가 맞는다. */
 .chapter--c{ position:relative; }
 .chapter--c .chapter__glyph{
   position:absolute;
-  left:0; top:-2%;
-  font-size:clamp(120px,17vw,260px);
-  line-height:.8;
+  left:34%;
+  right:auto;
+  top:clamp(88px,8.5vw,138px);   /* 제목 높이에 걸치도록 */
+  font-size:clamp(92px,12vw,186px);
+  line-height:1.06;
   opacity:.06;
   z-index:0;
 }
 .chapter--c .chapter__main{ position:relative; z-index:1; }
 @media (max-width:899px){
-  .chapter--c .chapter__glyph{ left:auto; right:-4%; top:-3%; opacity:.05; }
+  .chapter--c .chapter__glyph{
+    left:auto; right:3%; top:0;
+    font-size:clamp(84px,22vw,140px);
+    opacity:.05;
+  }
 }
