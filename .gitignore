@@ -25,3 +25,4 @@ appearance.txt
 # 비공개 구역 비밀번호 — 저장소에 올리지 않는다
 gate.pw
 secret.txt
+supabase/.temp/
