@@ -3,7 +3,9 @@
 // 웹훅 URL 은 이 파일에도 저장소에도 없다. Supabase secret 으로만 주입한다:
 //   npx supabase secrets set DISCORD_WEBHOOK_URL="..." --project-ref <ref>
 //
-// 개인정보는 보내지 않는다. Discord 로 나가는 것은 "종류 + 시각" 뿐이다.
+// 개인정보는 보내지 않는다. Discord 로 나가는 것은 "이름 + 종류 + 시각" 뿐이며,
+// 이름은 방문자 기기가 스스로 뽑은 '익명의 <동물>' 이다 — 서버는 저장하지 않고
+// 그 한 줄을 만드는 데만 쓰고 버린다.
 // IP 는 호출 제한에만 쓰고, 원본은 어디에도 남기지 않는다 —
 // SHA-256 앞 8바이트만 객체 '이름'으로 쓰이고 1분 뒤 폐기된다.
 //
@@ -45,6 +47,34 @@ async function fingerprint(ip: string): Promise<string> {
   );
   return Array.from(new Uint8Array(buf).slice(0, 8))
     .map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// 이름은 방문자가 보내는 값이므로 그대로 믿지 않는다. 웹훅으로 임의 문자열이
+// 흘러 들어가면 멘션(@everyone)이나 마크다운 주입이 되므로, 형태가 정확히
+// "익명의 <한글>" 이 아니면 통째로 버리고 기본값으로 바꾼다.
+const NAME_RE = /^익명의 [가-힣]{1,12}$/;
+const NAME_FALLBACK = "익명의 방문자";
+
+function safeName(raw: unknown): string {
+  if (typeof raw !== "string") return NAME_FALLBACK;
+  const n = raw.trim();
+  if (n.length > 20 || !NAME_RE.test(n)) return NAME_FALLBACK;
+  return n;
+}
+
+// 9/8 09:50:23 (Asia/Seoul). 연도는 생략한다.
+function stamp(): string {
+  const p = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? "";
+  return `${g("month")}/${g("day")} ${g("hour")}:${g("minute")}:${g("second")}`;
 }
 
 let bucketReady = false;
@@ -116,9 +146,15 @@ Deno.serve(async (req) => {
     return json({ error: "bad json" }, 400);
   }
 
-  const type = (body as { type?: unknown } | null)?.type;
+  const b = body as { type?: unknown; name?: unknown } | null;
+
+  // 이름을 먼저 정리한다. 그래야 잘못된 요청에도 확정된 이름을 돌려줄 수 있어,
+  // Discord 로 실제 발송하지 않고도 검증 동작을 확인할 수 있다.
+  const name = safeName(b?.name);
+
+  const type = b?.type;
   if (type !== "visit" && type !== "unlock") {
-    return json({ error: "bad type" }, 400);
+    return json({ error: "bad type", name }, 400);
   }
 
   const minute = Math.floor(Date.now() / 60_000);
@@ -140,15 +176,9 @@ Deno.serve(async (req) => {
 
   if (!WEBHOOK) return json({ ok: true, skipped: "no webhook" });
 
-  const when = new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date());
-
-  const content = type === "unlock"
-    ? `封 해제 — 비공개 구역 열람\n${when}`
-    : `기록부 열람\n${when}`;
+  // 모바일에서 지저분하게 꺾이지 않도록 한 줄로 보낸다.
+  const what = type === "unlock" ? "封 해제, 비공개 구역 열람" : "기록부 열람";
+  const content = `${name} — ${what} (${stamp()})`;
 
   try {
     await fetch(WEBHOOK, {
@@ -159,5 +189,5 @@ Deno.serve(async (req) => {
   } catch {
     // 전달 실패는 조용히 넘긴다
   }
-  return json({ ok: true });
+  return json({ ok: true, name });
 });

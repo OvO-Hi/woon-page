@@ -519,6 +519,9 @@
    Supabase Edge Function(notify)이 Discord 로 중계한다.
    웹훅 URL 은 함수의 secret 에만 있고 이 파일에는 없다.
 
+   기기마다 '익명의 <동물>' 이름을 한 번 뽑아 localStorage 에 두고 계속 쓴다.
+   알림에 표시하는 용도가 전부다 — 서버는 이 이름을 저장하지 않는다.
+
    내 기기에서는 알림을 보내지 않으려면 콘솔에서 한 줄:
      localStorage.setItem('woon-owner','1')
    해제하려면:
@@ -530,6 +533,47 @@
   'use strict';
 
   var SESSION_KEY = 'woon-visit-sent';
+  var NAME_KEY = 'woon-visitor-name';
+
+  // 기기마다 한 번 뽑아 두는 익명 이름. 알림에 표시하는 용도가 전부이고
+  // 서버에는 저장하지 않는다. 기기끼리 겹칠 수 있으나 상관없다.
+  var ANIMALS = [
+    '수달', '삵', '담비', '두루미', '너구리', '고슴도치', '청설모', '다람쥐',
+    '여우', '늑대', '오소리', '족제비', '노루', '사슴', '멧토끼', '산양',
+    '반달곰', '표범', '스라소니', '두더지', '박쥐', '물범', '돌고래', '고래',
+    '수리부엉이', '소쩍새', '올빼미', '딱따구리', '물총새', '백로', '황새',
+    '기러기', '원앙', '까치', '직박구리', '동박새', '참새', '제비', '종달새',
+    '뜸부기', '물떼새', '갈매기', '가마우지', '황조롱이', '솔개', '두꺼비',
+    '잠자리', '사마귀', '반딧불이', '개구리', '도롱뇽', '남생이', '잉어',
+    '쏘가리', '은어', '가재', '달팽이', '나비'
+  ];
+
+  function pickAnimal() {
+    var i;
+    try {
+      var a = new Uint32Array(1);
+      crypto.getRandomValues(a);
+      i = a[0] % ANIMALS.length;
+    } catch (e) {
+      i = Math.floor(Math.random() * ANIMALS.length);
+    }
+    return ANIMALS[i];
+  }
+
+  function visitorName() {
+    var name;
+    try {
+      name = localStorage.getItem(NAME_KEY);
+      if (!name || name.indexOf('익명의 ') !== 0 || name.length > 20) {
+        name = '익명의 ' + pickAnimal();
+        localStorage.setItem(NAME_KEY, name);
+      }
+    } catch (e) {
+      // localStorage 를 못 쓰면 이름을 기억하지 못한다 — 매번 새로 뽑는다
+      name = '익명의 ' + pickAnimal();
+    }
+    return name;
+  }
 
   function isOwner() {
     try { return localStorage.getItem('woon-owner') === '1'; } catch (e) { return false; }
@@ -548,7 +592,7 @@
           'apikey': cfg.SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ type: type }),
+        body: JSON.stringify({ type: type, name: visitorName() }),
         keepalive: true
       }).catch(function () {});
     } catch (e) {}
