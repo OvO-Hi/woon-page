@@ -167,6 +167,18 @@
     });
   }
 
+  /* ── 나중에 삽입되는 콘텐츠(비공개 구역)를 초기화한다 ─── */
+  window.__woonHydrate = function (root) {
+    if (!root) return;
+    Array.prototype.forEach.call(root.querySelectorAll('.toggle'), setupToggle);
+    var els = root.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      Array.prototype.forEach.call(els, function (el) { el.classList.add('is-in'); });
+    } else {
+      Array.prototype.forEach.call(els, function (el) { io.observe(el); });
+    }
+  };
+
   /* ── 섹션 테마 — 물 → 마름 → 물 ────────────────────── */
   var themed = document.querySelectorAll('[data-theme]');
   if (themed.length && 'IntersectionObserver' in window) {
@@ -374,4 +386,113 @@
     s.onerror = disable;
     document.head.appendChild(s);
   } catch (e) { disable(); }
+})();
+
+
+/* ============================================================
+   비공개 구역 잠금 — AES-GCM 복호화
+   페이지에는 암호문만 실려 있고, 올바른 비밀번호로 키를 유도해야
+   평문 HTML 이 만들어진다. 실패해도 페이지 나머지는 영향받지 않는다.
+
+   비밀번호를 바꾸려면 build.py 의 GATE_PASSWORD 를 고치고
+   GATE_VERSION 을 v2 로 올린 뒤 다시 빌드한다. 버전이 바뀌면
+   기존 기기에 저장된 키가 무효가 되어 모두 다시 입력하게 된다.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var gate = document.getElementById('gate');
+  var dataEl = document.getElementById('gate-data');
+  if (!gate || !dataEl) return;
+
+  var panel = gate.querySelector('.gate__panel');
+  var form  = gate.querySelector('.gate__form');
+  var input = gate.querySelector('.gate__input');
+  var btn   = gate.querySelector('.gate__btn');
+  var msg   = gate.querySelector('.gate__msg');
+  var slot  = gate.querySelector('.gate__content');
+
+  var payload;
+  try { payload = JSON.parse(dataEl.textContent); } catch (e) { return; }
+  var VERSION = gate.getAttribute('data-gate-version') || payload.v;
+  var STORE = VERSION;                       // 예: woon-gate-v1
+
+  var subtle = window.crypto && window.crypto.subtle;
+  if (!subtle) {
+    msg.textContent = '이 브라우저에서는 열람할 수 없습니다.';
+    return;
+  }
+
+  function b64(s) {
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function toB64(buf) {
+    var b = new Uint8Array(buf), s = '';
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s);
+  }
+
+  function deriveKey(pw) {
+    return subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey'])
+      .then(function (km) {
+        return subtle.deriveKey(
+          { name: 'PBKDF2', salt: b64(payload.salt), iterations: payload.it, hash: 'SHA-256' },
+          km, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+      });
+  }
+
+  function decryptWith(key) {
+    return subtle.decrypt({ name: 'AES-GCM', iv: b64(payload.iv) }, key, b64(payload.ct))
+      .then(function (buf) { return new TextDecoder().decode(buf); });
+  }
+
+  function reveal(htmlText) {
+    slot.innerHTML = htmlText;
+    slot.hidden = false;
+    // 삽입된 토글·인용을 기존 스크립트에 물린다
+    if (typeof window.__woonHydrate === 'function') window.__woonHydrate(slot);
+    // 스크롤 점프 없이 펼친다
+    requestAnimationFrame(function () { gate.classList.add('is-open'); });
+  }
+
+  function remember(key) {
+    subtle.exportKey('raw', key).then(function (raw) {
+      try { localStorage.setItem(STORE, toB64(raw)); } catch (e) {}
+    }).catch(function () {});
+  }
+
+  // 재방문 — 저장해둔 유도 키로 자동 복호화 (비밀번호 원문은 저장하지 않는다)
+  var saved = null;
+  try { saved = localStorage.getItem(STORE); } catch (e) {}
+  if (saved) {
+    subtle.importKey('raw', b64(saved), { name: 'AES-GCM' }, true, ['decrypt'])
+      .then(decryptWith)
+      .then(reveal)
+      .catch(function () { try { localStorage.removeItem(STORE); } catch (e) {} });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = input.value;
+    if (!pw) return;
+    btn.disabled = true;
+    msg.classList.remove('is-error');
+    msg.textContent = '';
+    deriveKey(pw)
+      .then(function (key) {
+        return decryptWith(key).then(function (text) { remember(key); reveal(text); });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        input.value = '';
+        msg.textContent = '일치하지 않습니다.';
+        msg.classList.add('is-error');
+        panel.classList.remove('is-wrong');
+        void panel.offsetWidth;
+        panel.classList.add('is-wrong');
+        input.focus();
+      });
+  });
 })();
