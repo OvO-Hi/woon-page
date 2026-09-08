@@ -326,12 +326,20 @@
   var since = null;      // 현재 섹션을 보기 시작한 시각 (안 보이면 null)
   var listeners = [];
 
+  // 표시는 한글로 통일한다. 제목은 한자·한글이 겹쳐 있으니 한글 쪽을 쓰고,
+  // 겹쳐 있지 않은 제목(封 앞의 非公開)만 따로 적어 둔다.
+  var KO = { '非公開': '비공개' };
+
   function nameOf(sec) {
     var h = sec.querySelector('h2');
     if (!h) return null;
-    var han = h.querySelector('.swap__han');
-    var t = (han || h).textContent.trim();
-    return t || null;
+    var ko = h.querySelector('.swap__ko');
+    if (ko) {
+      var k = ko.textContent.trim();
+      if (k) return k;
+    }
+    var t = h.textContent.trim();
+    return KO[t] || t || null;
   }
 
   function flush() {

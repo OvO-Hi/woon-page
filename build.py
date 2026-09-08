@@ -530,7 +530,7 @@ DOC = '''<!DOCTYPE html>
 <meta name="description" content="月影 保管 · 一品 把守 人事錄">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=%(css_v)s">
 </head>
 <body>
 
@@ -788,7 +788,7 @@ DOC = '''<!DOCTYPE html>
 
 <script type="application/json" id="gate-data">%(gatedata)s</script>
 <script src="config.js"></script>
-<script src="main.js"></script>
+<script src="main.js?v=%(js_v)s"></script>
 </body>
 </html>
 '''
@@ -803,6 +803,12 @@ private_html = PRIVATE_TPL % dict(
     acct=e(SECRET['account_id']), acctlink=e(SECRET['account_link']),
     adulturl=e(SECRET['adult_url']),
 )
+
+# 파일 내용의 해시 — 배포마다 바뀌므로 방문자 캐시가 옛 파일에 머물지 않는다.
+# main.js / style.css 를 고쳤으면 build.py 를 다시 돌려야 index.html 이 따라온다.
+def asset_v(path):
+    return hashlib.sha256(io.open(path, 'rb').read()).hexdigest()[:10]
+
 
 def encrypt_region(plain, password):
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -847,6 +853,7 @@ out = DOC % dict(
     row1=e(row1), clike=e(c_like), olike=e(o_like),
     row2=e(row2), chate=e(c_hate), ohate=e(o_hate),
     privnote=e('아래는 비공개 사항입니다.'),
+    css_v=asset_v('style.css'), js_v=asset_v('main.js'),
 )
 io.open('index.html', 'w', encoding='utf-8').write(out)
 print('index.html — %d bytes' % len(out.encode('utf-8')))
@@ -957,7 +964,8 @@ li:last-child{border-bottom:1px solid var(--hair)}
   var SALT = '__SALT__', ITERS = __ITERS__, VERIFIER = '__VERIFIER__';
   var STORE = 'woon-keeper-__VERSION__';
 
-  var SECTIONS = ['外貌','身元','性情','傳承','渴脈','年代','日常','好惡','非說','確認','非公開'];
+  var SECTIONS = ['외모','신원','성정','전승','갈맥','연대','일상','호오','비설','확인','비공개',
+                  '外貌','身元','性情','傳承','渴脈','年代','日常','好惡','非說','確認','非公開'];
 
   var f = document.getElementById('f'), pw = document.getElementById('pw');
   var msg = document.getElementById('msg'), live = document.getElementById('live');
