@@ -964,8 +964,14 @@ li:last-child{border-bottom:1px solid var(--hair)}
   var SALT = '__SALT__', ITERS = __ITERS__, VERIFIER = '__VERIFIER__';
   var STORE = 'woon-keeper-__VERSION__';
 
-  var SECTIONS = ['외모','신원','성정','전승','갈맥','연대','일상','호오','비설','확인','비공개',
-                  '外貌','身元','性情','傳承','渴脈','年代','日常','好惡','非說','確認','非公開'];
+  // 표시는 한글로 통일한다. 예전 main.js 가 캐시에 남은 방문자는 한자 이름을
+  // 보내오므로, 목록에 넣는 대신 여기서 한글로 옮긴다.
+  var SECTIONS = {
+    '외모':'외모','신원':'신원','성정':'성정','전승':'전승','갈맥':'갈맥','연대':'연대',
+    '일상':'일상','호오':'호오','비설':'비설','확인':'확인','비공개':'비공개',
+    '外貌':'외모','身元':'신원','性情':'성정','傳承':'전승','渴脈':'갈맥','年代':'연대',
+    '日常':'일상','好惡':'호오','非說':'비설','確認':'확인','非公開':'비공개'
+  };
 
   var f = document.getElementById('f'), pw = document.getElementById('pw');
   var msg = document.getElementById('msg'), live = document.getElementById('live');
@@ -1048,7 +1054,7 @@ li:last-child{border-bottom:1px solid var(--hair)}
         var m = (st[k] && st[k][0]) || {};
         var name = typeof m.name === 'string' ? m.name.slice(0, 20) : '';
         if (name.indexOf('익명의 ') !== 0) name = '익명의 방문자';
-        var sec = SECTIONS.indexOf(m.section) >= 0 ? m.section : '';
+        var sec = (typeof m.section === 'string' && SECTIONS[m.section]) || '';
         rows.push({ name: name, sec: sec, at: typeof m.at === 'number' ? m.at : Date.now() });
       });
       rows.sort(function (a, b) { return a.at - b.at; });
