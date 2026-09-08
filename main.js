@@ -579,20 +579,35 @@
     try { return localStorage.getItem('woon-owner') === '1'; } catch (e) { return false; }
   }
 
-  window.__woonNotify = function (type) {
-    if (type !== 'visit' && type !== 'unlock') return;
+  window.__woonNotify = function (type, duration) {
+    if (type !== 'visit' && type !== 'unlock' && type !== 'leave') return;
     if (isOwner()) return;
     var cfg = window.WOON_CONFIG || {};
     if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return;
+
+    var url = cfg.SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/notify';
+    var payload = { type: type, name: visitorName() };
+    if (type === 'leave') payload.duration = duration;
+    var body = JSON.stringify(payload);
+
+    // 떠나는 순간의 일반 fetch 는 유실된다. sendBeacon 은 헤더를 못 붙이므로
+    // text/plain 으로 보낸다 — 프리플라이트를 피하려는 것이고, 함수는
+    // --no-verify-jwt 라 인증 헤더 없이도 받는다.
+    if (type === 'leave' && navigator.sendBeacon) {
+      try {
+        if (navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) return;
+      } catch (e) {}
+    }
+
     try {
-      fetch(cfg.SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/notify', {
+      fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': cfg.SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ type: type, name: visitorName() }),
+        body: body,
         keepalive: true
       }).catch(function () {});
     } catch (e) {}
@@ -607,4 +622,38 @@
   } catch (e) {
     window.__woonNotify('visit');
   }
+
+  /* --- 열람 종료 -------------------------------------------------------
+     보이는 동안만 시간을 잰다. 탭을 가리면 그 구간을 닫아 종료 알림을 보내고,
+     돌아오면 새 구간을 연다 — 구간마다 따로 세지, 합산하지 않는다.
+
+     짧은 전환이 반복되면 알림이 시끄러워지므로 30초 미만 구간은 보내지 않는다.
+     이 문턱은 첫 구간에도 똑같이 건다. 모바일에서 앱을 잠깐 바꾸거나 페이지를
+     열자마자 닫는 경우가 흔한데, 그때마다 "3초 열람"이 오는 게 더 성가시다.
+
+     이중 발송은 segStart 를 비우는 것으로 막는다. hidden 에서 보냈으면
+     segStart 가 null 이라 뒤따르는 pagehide 는 아무것도 하지 않는다.
+     --------------------------------------------------------------------- */
+  var LEAVE_MIN_MS = 30000;
+  var segStart = null;
+
+  function openSegment() {
+    if (segStart === null) segStart = Date.now();
+  }
+
+  function closeSegment() {
+    if (segStart === null) return;
+    var ms = Date.now() - segStart;
+    segStart = null;
+    if (ms < LEAVE_MIN_MS) return;
+    window.__woonNotify('leave', Math.round(ms / 1000));
+  }
+
+  if (document.visibilityState !== 'hidden') openSegment();
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') closeSegment();
+    else openSegment();
+  });
+  window.addEventListener('pagehide', closeSegment);
 })();
