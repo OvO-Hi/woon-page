@@ -311,36 +311,72 @@
 
 
 /* ============================================================
-   섹션 체류 추적
-   지금 어느 섹션을 보고 있는지, 각 섹션을 얼마나 봤는지 센다.
+   체류 추적
+   지금 어느 대목을 보고 있는지, 어디에 얼마나 머물렀는지 센다.
    열람 종료 알림의 요약과 관리자 뷰(keeper)의 presence 가 함께 쓴다.
+
+   섹션보다 한 단계 아래까지 내려간다 — 성정의 각 장, 갈맥의 각 항,
+   연대의 각 사건, 일상의 각 항목, 확인의 각 블록. 하위가 없는 섹션
+   (외모·신원·전승·비설)은 섹션 그대로다.
+
+   이름은 "연대·탈태" 처럼 가운뎃점을 띄어쓰기 없이 붙인 꼴로 만든다.
+   알림에서 항목을 나누는 구분자가 " · "(양옆 공백)이라 서로 겹치지 않는다.
 
    탭이 보이는 동안만 센다. 배경에 띄워 둔 시간은 체류가 아니다.
    ============================================================ */
 (function () {
   'use strict';
 
-  var entries = [];      // { el, name }
-  var dwell = {};        // 섹션명 → 누적 ms
-  var current = null;
-  var since = null;      // 현재 섹션을 보기 시작한 시각 (안 보이면 null)
-  var listeners = [];
+  var SUB_SEL = '.chapter, .rail__item, .tl__item, .entry, .form-block';
 
-  // 표시는 한글로 통일한다. 제목은 한자·한글이 겹쳐 있으니 한글 쪽을 쓰고,
-  // 겹쳐 있지 않은 제목(封 앞의 非公開)만 따로 적어 둔다.
-  var KO = { '非公開': '비공개' };
+  // 겹쳐 적힌 제목이 없는 것들
+  var KO_SEC = { '非公開': '비공개' };
 
-  function nameOf(sec) {
+  // 연대는 제목의 한글이 "師 스승" 처럼 한자를 물고 있어 그대로 못 쓴다.
+  var KO_TL = {
+    '誕生': '탄생', '父離': '이별(상)', '離別': '이별(하)', '師': '스승',
+    '脫胎': '탈태', '雲林': '운림', '喪': '상',
+    '出雲林 · 行旅': '행려', '月影': '월영'
+  };
+
+  function txt(el) { return el ? el.textContent.trim() : ''; }
+
+  function secName(sec) {
     var h = sec.querySelector('h2');
     if (!h) return null;
-    var ko = h.querySelector('.swap__ko');
-    if (ko) {
-      var k = ko.textContent.trim();
-      if (k) return k;
-    }
-    var t = h.textContent.trim();
-    return KO[t] || t || null;
+    var ko = txt(h.querySelector('.swap__ko'));
+    if (ko) return ko;
+    var t = txt(h);
+    return KO_SEC[t] || t || null;
   }
+
+  function subName(el) {
+    var t = el.querySelector(
+      '.chapter__title, .rail__title, .toggle__title, .entry__title, h3');
+    if (!t) return null;
+    var han = txt(t.querySelector('.han'));
+    if (han && KO_TL[han]) return KO_TL[han];
+    var sw = txt(t.querySelector('.swap__ko'));
+    if (sw) return sw;
+    var ko = txt(t.querySelector('.ko'));
+    var name = ko || txt(t);
+    // 일상의 물 항목은 제목이 '水, 물' 이라 한자와 쉼표를 달고 온다.
+    // 앞머리의 한글 아닌 것과 꼬리의 마침표를 떼어 '물' 만 남긴다.
+    return name.replace(/^[^가-힣]+/, '').replace(/[.\s]+$/, '') || null;
+  }
+
+  // 好惡·習 는 일상 안에 들어 있지만 읽는 사람에게는 호오 쪽이다
+  function ownerSection(el, sec) {
+    var g = el.closest && el.closest('.group');
+    if (g && txt(g.querySelector('.group__label')).indexOf('好惡') === 0) return '호오';
+    return sec;
+  }
+
+  var units = [];        // { el, name, sub }
+  var dwell = {};        // 이름 → 누적 ms
+  var current = null;
+  var since = null;      // 지금 대목을 보기 시작한 시각 (안 보이면 null)
+  var listeners = [];
 
   function flush() {
     if (current && since !== null) {
@@ -363,33 +399,64 @@
     }
   }
 
+  // 화면 한가운데에서 얼마나 떨어져 있나 — 여럿이 걸칠 때 가장 가까운 것을 고른다
+  function offCenter(el) {
+    var r = el.getBoundingClientRect();
+    return Math.abs((r.top + r.bottom) / 2 - window.innerHeight / 2);
+  }
+
+  function pick() {
+    var vis = units.filter(function (u) { return u.visible; });
+    var subs = vis.filter(function (u) { return u.sub; });
+    var pool = subs.length ? subs : vis;
+    if (!pool.length) return null;
+    var best = pool[0], bd = offCenter(best.el);
+    for (var i = 1; i < pool.length; i++) {
+      var d = offCenter(pool[i].el);
+      if (d < bd) { best = pool[i]; bd = d; }
+    }
+    return best.name;
+  }
+
   var io = null;
   if ('IntersectionObserver' in window) {
-    // 인덱스 강조와 같은 기준 — 화면 한가운데를 지나는 섹션이 '현재'다
+    // 인덱스 강조와 같은 기준 — 화면 한가운데를 지나는 것이 '현재'다
     io = new IntersectionObserver(function (ens) {
       ens.forEach(function (en) {
-        var hit = entries.filter(function (x) { return x.el === en.target; })[0];
-        if (hit) hit.visible = en.isIntersecting;
+        for (var i = 0; i < units.length; i++) {
+          if (units[i].el === en.target) { units[i].visible = en.isIntersecting; break; }
+        }
       });
-      var act = entries.filter(function (x) { return x.visible; })[0];
-      setCurrent(act ? act.name : null);
+      setCurrent(pick());
     }, { rootMargin: '-45% 0px -45% 0px' });
+  }
+
+  function add(el, name, sub) {
+    for (var i = 0; i < units.length; i++) if (units[i].el === el) return;
+    units.push({ el: el, name: name, sub: sub });
+    if (io) io.observe(el);
   }
 
   function scan() {
     var secs = document.querySelectorAll('section');
-    Array.prototype.forEach.call(secs, function (el) {
-      if (entries.filter(function (x) { return x.el === el; })[0]) return;
-      var n = nameOf(el);
-      if (!n) return;
-      entries.push({ el: el, name: n });
-      if (io) io.observe(el);
+    Array.prototype.forEach.call(secs, function (sec) {
+      var sn = secName(sec);
+      if (!sn) return;
+      add(sec, sn, false);
+      Array.prototype.forEach.call(sec.querySelectorAll(SUB_SEL), function (el) {
+        // 안쪽 섹션(비공개 안의 비설·확인)에 속한 것은 그쪽에서 잡는다
+        if (el.closest('section') !== sec) return;
+        var sub = subName(el);
+        if (!sub) return;
+        var owner = ownerSection(el, sn);
+        add(el, sub === owner ? owner : owner + '·' + sub, true);
+      });
     });
   }
 
   scan();
 
-  // 잠금이 풀리면 非說·確認 이 새로 붙는다 — 그때 다시 훑는다
+  // 잠금이 풀리면 비설·확인이 새로 붙는다 — 그때 다시 훑는다
   var hydrate = window.__woonHydrate;
   window.__woonHydrate = function (root) {
     try { if (hydrate) hydrate(root); } finally { try { scan(); } catch (e) {} }
@@ -400,27 +467,42 @@
     else resume();
   });
 
+  function span(ms) {
+    var s = Math.round(ms / 1000);
+    return s < 60 ? s + '초' : Math.max(1, Math.round(s / 60)) + '분';
+  }
+
   window.__woonSections = {
     current: function () { return current; },
     onChange: function (fn) { listeners.push(fn); },
 
-    // 상위 3개를 "年代 6분 · 渴脈 3분" 으로 만들고 누적을 비운다.
-    // 열람 종료 알림의 시간이 '그 구간'인 것과 눈금을 맞추려는 것이다.
+    // 10초 넘게 머문 곳을 오래 본 순서로 늘어놓고 누적을 비운다.
+    // 열람 시간이 '그 구간' 인 것과 눈금을 맞추려는 것이다.
+    // 길어지면 뒤쪽은 "외 N곳" 으로 접는다 — 함수가 300자까지만 받는다.
     take: function () {
       flush();
       var arr = [];
       for (var k in dwell) {
-        if (Object.prototype.hasOwnProperty.call(dwell, k) && dwell[k] >= 30000) {
+        if (Object.prototype.hasOwnProperty.call(dwell, k) && dwell[k] >= 10000) {
           arr.push({ n: k, ms: dwell[k] });
         }
       }
       dwell = {};
       resume();
       arr.sort(function (a, b) { return b.ms - a.ms; });
-      return arr.slice(0, 3).map(function (x) {
-        var sec = Math.round(x.ms / 1000);
-        return x.n + ' ' + (sec < 60 ? sec + '초' : Math.max(1, Math.round(sec / 60)) + '분');
-      }).join(' · ');
+
+      var parts = arr.map(function (x) { return x.n + ' ' + span(x.ms); });
+      var LIMIT = 280;
+      var out = parts.join(' · ');
+      if (out.length <= LIMIT) return out;
+      var keep = parts.slice();
+      while (keep.length) {
+        keep.pop();
+        var tail = ' · 외 ' + (parts.length - keep.length) + '곳';
+        out = keep.join(' · ') + tail;
+        if (keep.length && out.length <= LIMIT) return out;
+      }
+      return '';
     }
   };
 })();

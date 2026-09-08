@@ -62,28 +62,51 @@ function safeName(raw: unknown): string {
   return n;
 }
 
-// 섹션 요약. 방문자가 보내는 값이라 토큰 단위로 검사해서, 실제 섹션명이
-// 아니거나 형태가 "<섹션> <숫자><분|초>" 가 아니면 그 토큰을 버린다.
-const SECTIONS = new Set([
-  "외모", "신원", "성정", "전승", "갈맥", "연대", "일상", "호오",
-  "비설", "확인", "비공개",
-  // 한자 이름을 쓰던 판이 캐시에 남아 있는 동안에도 받아 준다
-  "外貌", "身元", "性情", "傳承", "渴脈", "年代", "日常", "好惡",
-  "非說", "確認", "非公開",
-]);
-const SEC_TOKEN = /^(\S{1,4}) (\d{1,4})(분|초)$/;
+// 체류 요약. 방문자가 보내는 값이라 항목 단위로 검사한다.
+//
+// 이름은 "연대·탈태" 처럼 <섹션>·<하위> 꼴이다. 섹션은 실제 목록에 있어야 하고
+// (한자 이름을 쓰던 판이 캐시에 남아 있을 수 있어 한자도 받아 한글로 옮긴다),
+// 하위는 한글·숫자·괄호·공백만 허용한다. 멘션이나 마크다운이 웹훅으로 흘러
+// 들어가지 못하게 하려는 것이고, 하위 이름은 글이 바뀌면 함께 바뀌므로
+// 목록으로 못 박지 않고 형태로만 거른다.
+const SECTION_KO: Record<string, string> = {
+  "외모": "외모", "신원": "신원", "성정": "성정", "전승": "전승",
+  "갈맥": "갈맥", "연대": "연대", "일상": "일상", "호오": "호오",
+  "비설": "비설", "확인": "확인", "비공개": "비공개",
+  "外貌": "외모", "身元": "신원", "性情": "성정", "傳承": "전승",
+  "渴脈": "갈맥", "年代": "연대", "日常": "일상", "好惡": "호오",
+  "非說": "비설", "確認": "확인", "非公開": "비공개",
+};
+const SUB_RE = /^[가-힣0-9()·\s]{1,14}$/;
+const ENTRY_RE = /^(.+) (\d{1,4})(분|초)$/;
+const MORE_RE = /^외 \d{1,3}곳$/;
+
+function partName(raw: string): string | null {
+  const p = raw.split("·");
+  if (p.length > 2) return null;
+  const sec = SECTION_KO[p[0].trim()];
+  if (!sec) return null;
+  if (p.length === 1) return sec;
+  const sub = p[1].trim();
+  if (!SUB_RE.test(sub)) return null;
+  return sec + "·" + sub;
+}
 
 function sectionsText(raw: unknown): string {
   if (typeof raw !== "string") return "";
   const s = raw.trim();
-  if (!s || s.length > 80) return "";
-  const ok = s.split("·")
-    .map((t) => t.trim())
-    .filter((t) => {
-      const m = SEC_TOKEN.exec(t);
-      return !!m && SECTIONS.has(m[1]);
-    });
-  return ok.slice(0, 3).join(" · ");
+  if (!s || s.length > 300) return "";
+  const ok: string[] = [];
+  for (const t of s.split(" · ").map((x) => x.trim())) {
+    if (MORE_RE.test(t)) { ok.push(t); continue; }   // 접힌 꼬리는 그대로 둔다
+    const m = ENTRY_RE.exec(t);
+    if (!m) continue;
+    const name = partName(m[1]);
+    if (!name) continue;
+    ok.push(`${name} ${m[2]}${m[3]}`);
+    if (ok.length >= 24) break;
+  }
+  return ok.join(" · ");
 }
 
 // 열람 시간. 값이 수상하면(숫자가 아니거나 0~86400 밖) 빈 문자열을 주고,
@@ -241,7 +264,10 @@ Deno.serve(async (req) => {
     : secs
     ? ` (${secs})`
     : "";
-  const content = `${name} — ${what}${tail} (${stamp()})`;
+  const line = `${name} — ${what}${tail} (${stamp()})`;
+  // Discord 한 메시지 상한은 2000자다. 여기까지 오면 한참 못 미치지만,
+  // 잘려 나가 전송이 통째로 실패하는 일만은 없게 막아 둔다.
+  const content = line.length > 1900 ? line.slice(0, 1900) : line;
 
   try {
     await fetch(WEBHOOK, {

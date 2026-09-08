@@ -210,6 +210,13 @@ try:
     nraw = [l.strip() for l in io.open('nature.txt', encoding='utf-8') if l.strip()]
 except IOError:
     nraw = []
+except (UnicodeDecodeError, ValueError) as err:
+    raise SystemExit('nature.txt 를 읽을 수 없습니다 (%s). 파일이 깨졌는지 확인하세요.' % err)
+# 파일이 있는데 알맹이가 없으면 조용히 넘어가지 않는다.
+# 예전에 이 파일이 통째로 NUL 로 바뀐 적이 있는데, 조용한 폴백 탓에
+# 성정 본문이 옛 초고로 되돌아간 것을 한참 뒤에야 알았다.
+if os.path.exists('nature.txt') and not nraw:
+    raise SystemExit('nature.txt 가 비어 있습니다. 내용이 날아갔는지 확인하세요.')
 NT = {}
 if nraw:
     nk = [i for i, l in enumerate(nraw) if l.startswith('[') and l.endswith(']')]
@@ -232,6 +239,11 @@ def chapter(kind, glyph, han, ko, tags, gloss, lines, extra=None, auto_caption=T
     if kind == 'c':
         return '<div class="chapter chapter--c">' + g + main + '</div>'
     return '<div class="chapter chapter--a">' + g + main + '</div>'
+
+if nraw:
+    _missing = [k for k in ('和而不流', '不踰矩', '磊落') if k not in NT]
+    if _missing:
+        raise SystemExit('nature.txt 에 %s 가 없습니다.' % ', '.join(_missing))
 
 nature = '\n\n      '.join([
     chapter('a', '和', han1, ko1, t1, g1, NT.get('和而不流', B[P1])),
@@ -443,6 +455,10 @@ try:
     hraw = [l.strip() for l in io.open('hidden.txt', encoding='utf-8') if l.strip()]
 except IOError:
     hraw = []
+except (UnicodeDecodeError, ValueError) as err:
+    raise SystemExit('hidden.txt 를 읽을 수 없습니다 (%s). 파일이 깨졌는지 확인하세요.' % err)
+if os.path.exists('hidden.txt') and not hraw:
+    raise SystemExit('hidden.txt 가 비어 있습니다. 내용이 날아갔는지 확인하세요.')
 
 hidden_html = ''
 if hraw:
@@ -965,13 +981,30 @@ li:last-child{border-bottom:1px solid var(--hair)}
   var STORE = 'woon-keeper-__VERSION__';
 
   // 표시는 한글로 통일한다. 예전 main.js 가 캐시에 남은 방문자는 한자 이름을
-  // 보내오므로, 목록에 넣는 대신 여기서 한글로 옮긴다.
+  // 보내오므로, 여기서 한글로 옮긴다.
+  //
+  // 이름은 "연대·탈태" 꼴로 온다. 섹션은 아래 목록에 있어야 하고, 하위는
+  // 한글·숫자·괄호·공백만 받는다 — 하위 이름은 글이 바뀌면 함께 바뀌므로
+  // 목록으로 못 박지 않고 형태로만 거른다.
   var SECTIONS = {
     '외모':'외모','신원':'신원','성정':'성정','전승':'전승','갈맥':'갈맥','연대':'연대',
     '일상':'일상','호오':'호오','비설':'비설','확인':'확인','비공개':'비공개',
     '外貌':'외모','身元':'신원','性情':'성정','傳承':'전승','渴脈':'갈맥','年代':'연대',
     '日常':'일상','好惡':'호오','非說':'비설','確認':'확인','非公開':'비공개'
   };
+  var SUB_RE = /^[가-힣0-9()·\s]{1,14}$/;
+
+  function partName(v) {
+    if (typeof v !== 'string' || v.length > 30) return '';
+    var p = v.split('·');
+    if (p.length > 2) return '';
+    var sec = SECTIONS[p[0].trim()];
+    if (!sec) return '';
+    if (p.length === 1) return sec;
+    var sub = p[1].trim();
+    if (!SUB_RE.test(sub)) return '';
+    return sec + ' \u00b7 ' + sub;   // 목록에서는 넉넉히 띄운다
+  }
 
   var f = document.getElementById('f'), pw = document.getElementById('pw');
   var msg = document.getElementById('msg'), live = document.getElementById('live');
@@ -1054,7 +1087,7 @@ li:last-child{border-bottom:1px solid var(--hair)}
         var m = (st[k] && st[k][0]) || {};
         var name = typeof m.name === 'string' ? m.name.slice(0, 20) : '';
         if (name.indexOf('익명의 ') !== 0) name = '익명의 방문자';
-        var sec = (typeof m.section === 'string' && SECTIONS[m.section]) || '';
+        var sec = partName(m.section);
         rows.push({ name: name, sec: sec, at: typeof m.at === 'number' ? m.at : Date.now() });
       });
       rows.sort(function (a, b) { return a.at - b.at; });
