@@ -1,0 +1,4 @@
+project_id = "woon-page"
+
+[functions.notify]
+verify_jwt = true

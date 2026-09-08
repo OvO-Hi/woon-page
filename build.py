@@ -806,7 +806,10 @@ private_html = PRIVATE_TPL % dict(
 
 def encrypt_region(plain, password):
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    salt = os.urandom(16)
+    # salt 는 버전에서 결정적으로 만든다. 매 빌드마다 무작위로 두면
+    # 기존 기기에 저장된 유도 키가 빌드할 때마다 무효가 된다.
+    # 비밀번호를 바꿀 때는 GATE_VERSION 을 올리므로 salt 도 함께 바뀐다.
+    salt = hashlib.sha256(('woon-gate-salt:' + GATE_VERSION).encode('utf-8')).digest()[:16]
     iv = os.urandom(12)
     key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, PBKDF2_ITERS, 32)
     ct = AESGCM(key).encrypt(iv, plain.encode('utf-8'), None)

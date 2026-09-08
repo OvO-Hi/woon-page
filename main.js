@@ -449,12 +449,24 @@
   }
 
   function reveal(htmlText) {
-    slot.innerHTML = htmlText;
+    // 단일 래퍼로 감싼다 — grid-template-rows 0fr→1fr 은 자식이 하나여야
+    // 전체가 접힌다 (섹션 둘을 그대로 넣으면 두 번째 행이 그냥 보인다)
+    slot.innerHTML = '<div class="gate__inner"></div>';
+    slot.firstChild.innerHTML = htmlText;
     slot.hidden = false;
     // 삽입된 토글·인용을 기존 스크립트에 물린다
     if (typeof window.__woonHydrate === 'function') window.__woonHydrate(slot);
-    // 스크롤 점프 없이 펼친다
-    requestAnimationFrame(function () { gate.classList.add('is-open'); });
+    slot.style.height = '0px';
+    void slot.offsetHeight;                       // 시작점 확정
+    gate.classList.add('is-open');
+    slot.style.height = slot.scrollHeight + 'px'; // 스크롤 점프 없이 펼친다
+    var done = function () {
+      slot.style.height = 'auto';                 // 이후 내용이 늘어도 따라가게
+      slot.removeEventListener('transitionend', onEnd);
+    };
+    var onEnd = function (e) { if (e.propertyName === 'height') done(); };
+    slot.addEventListener('transitionend', onEnd);
+    setTimeout(done, 1200);                       // 모션 최소화 설정 대비
   }
 
   function remember(key) {
@@ -482,7 +494,11 @@
     msg.textContent = '';
     deriveKey(pw)
       .then(function (key) {
-        return decryptWith(key).then(function (text) { remember(key); reveal(text); });
+        return decryptWith(key).then(function (text) {
+          remember(key);
+          reveal(text);
+          if (typeof window.__woonNotify === 'function') window.__woonNotify('unlock');
+        });
       })
       .catch(function () {
         btn.disabled = false;
@@ -495,4 +511,56 @@
         input.focus();
       });
   });
+})();
+
+
+/* ============================================================
+   접속 / 잠금해제 알림
+   Supabase Edge Function(notify)이 Discord 로 중계한다.
+   웹훅 URL 은 함수의 secret 에만 있고 이 파일에는 없다.
+
+   내 기기에서는 알림을 보내지 않으려면 콘솔에서 한 줄:
+     localStorage.setItem('woon-owner','1')
+   해제하려면:
+     localStorage.removeItem('woon-owner')
+
+   실패는 전부 조용히 무시한다 — 페이지 동작에 영향을 주지 않는다.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var SESSION_KEY = 'woon-visit-sent';
+
+  function isOwner() {
+    try { return localStorage.getItem('woon-owner') === '1'; } catch (e) { return false; }
+  }
+
+  window.__woonNotify = function (type) {
+    if (type !== 'visit' && type !== 'unlock') return;
+    if (isOwner()) return;
+    var cfg = window.WOON_CONFIG || {};
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return;
+    try {
+      fetch(cfg.SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ type: type }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
+  };
+
+  // 방문 알림 — 세션당 1회
+  try {
+    if (!sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      window.__woonNotify('visit');
+    }
+  } catch (e) {
+    window.__woonNotify('visit');
+  }
 })();

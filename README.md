@@ -40,3 +40,32 @@ venv/bin/python build.py
 
 `config.js` 의 Supabase URL / anon key 로 동작한다. 비워두면 표시가 조용히
 사라지고 페이지는 그대로 동작한다.
+
+## 접속 / 잠금해제 알림
+
+`supabase/functions/notify` (Edge Function)가 Discord 웹훅으로 중계한다.
+웹훅 URL은 함수의 secret 에만 있고 저장소·클라이언트 코드 어디에도 없다.
+
+Discord 로 나가는 것은 **종류와 시각뿐**이다. IP·위치·기기 정보는 보내지 않으며,
+IP 는 분당 호출 제한(같은 IP 4회/분)에만 쓰고 해시로만 잠깐 메모리에 둔다.
+
+### 배포
+
+```
+npx supabase login
+npx supabase secrets set DISCORD_WEBHOOK_URL="<웹훅 URL>" --project-ref <ref>
+npx supabase functions deploy notify --project-ref <ref>
+```
+
+### 내 기기에서 알림 끄기
+
+브라우저 콘솔에서 한 줄:
+
+```js
+localStorage.setItem('woon-owner','1')   // 끄기
+localStorage.removeItem('woon-owner')    // 다시 켜기
+```
+
+방문 알림은 세션당 1회(`sessionStorage`), 잠금해제 알림은 비밀번호를 직접
+입력해 성공했을 때만 보낸다(저장된 키로 자동 해제될 때는 보내지 않는다).
+전송 실패는 조용히 무시되어 페이지 동작에 영향이 없다.

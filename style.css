@@ -2267,13 +2267,13 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
 }
 
 /* 성공 시 기존 토글과 같은 톤으로 펼침 */
+/* 1회성 공개라 height 로 확실하게 편다.
+   grid-template-rows 0fr→1fr 은 여기서 전이가 걸리지 않았다. */
 .gate__content{
-  display:grid;
-  grid-template-rows:0fr;
-  transition:grid-template-rows .9s var(--ease);
+  height:0;
+  overflow:hidden;
+  transition:height .9s var(--ease);
 }
-.gate__content > *{ overflow:hidden; min-height:0; }
-.gate.is-open .gate__content{ grid-template-rows:1fr; }
 .gate.is-open .gate__panel{
   opacity:0;
   height:0;
