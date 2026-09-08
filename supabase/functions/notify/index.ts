@@ -62,19 +62,40 @@ function safeName(raw: unknown): string {
   return n;
 }
 
+// 섹션 요약. 방문자가 보내는 값이라 토큰 단위로 검사해서, 실제 섹션명이
+// 아니거나 형태가 "<섹션> <숫자><분|초>" 가 아니면 그 토큰을 버린다.
+const SECTIONS = new Set([
+  "外貌", "身元", "性情", "傳承", "渴脈", "年代", "日常", "好惡",
+  "非說", "確認", "非公開",
+]);
+const SEC_TOKEN = /^(\S{1,4}) (\d{1,4})(분|초)$/;
+
+function sectionsText(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  const s = raw.trim();
+  if (!s || s.length > 80) return "";
+  const ok = s.split("·")
+    .map((t) => t.trim())
+    .filter((t) => {
+      const m = SEC_TOKEN.exec(t);
+      return !!m && SECTIONS.has(m[1]);
+    });
+  return ok.slice(0, 3).join(" · ");
+}
+
 // 열람 시간. 값이 수상하면(숫자가 아니거나 0~86400 밖) 빈 문자열을 주고,
-// 호출부는 그때 괄호째 생략한다.
+// 호출부는 그때 괄호째 생략한다. "열람" 은 조립부에서 붙인다.
 function durationText(raw: unknown): string {
   if (typeof raw !== "number" || !Number.isFinite(raw)) return "";
   const s = Math.round(raw);
   if (s < 0 || s > 86400) return "";
-  if (s < 60) return `${s}초 열람`;
+  if (s < 60) return `${s}초`;
   if (s < 3600) {
     const m = Math.floor(s / 60), r = s % 60;
-    return r ? `${m}분 ${r}초 열람` : `${m}분 열람`;
+    return r ? `${m}분 ${r}초` : `${m}분`;
   }
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-  return m ? `${h}시간 ${m}분 열람` : `${h}시간 열람`;
+  return m ? `${h}시간 ${m}분` : `${h}시간`;
 }
 
 // 9/8 09:50:23 (Asia/Seoul). 연도는 생략한다.
@@ -164,7 +185,7 @@ Deno.serve(async (req) => {
   }
 
   const b = body as
-    | { type?: unknown; name?: unknown; duration?: unknown }
+    | { type?: unknown; name?: unknown; duration?: unknown; sections?: unknown }
     | null;
 
   // 이름을 먼저 정리한다. 그래야 잘못된 요청에도 확정된 이름을 돌려줄 수 있어,
@@ -175,7 +196,12 @@ Deno.serve(async (req) => {
   if (type !== "visit" && type !== "unlock" && type !== "leave") {
     // 이름·열람시간 정리 결과를 함께 돌려준다. Discord 로 실제 발송하지 않고도
     // 검증과 포맷을 확인할 수 있다.
-    return json({ error: "bad type", name, dur: durationText(b?.duration) }, 400);
+    return json({
+      error: "bad type",
+      name,
+      dur: durationText(b?.duration),
+      secs: sectionsText(b?.sections),
+    }, 400);
   }
 
   const minute = Math.floor(Date.now() / 60_000);
@@ -204,7 +230,15 @@ Deno.serve(async (req) => {
     ? "기록부 열람 종료"
     : "기록부 열람";
   const dur = type === "leave" ? durationText(b?.duration) : "";
-  const content = `${name} — ${what}${dur ? ` (${dur})` : ""} (${stamp()})`;
+  const secs = type === "leave" ? sectionsText(b?.sections) : "";
+  const tail = dur && secs
+    ? ` (${dur} · ${secs})`
+    : dur
+    ? ` (${dur} 열람)`
+    : secs
+    ? ` (${secs})`
+    : "";
+  const content = `${name} — ${what}${tail} (${stamp()})`;
 
   try {
     await fetch(WEBHOOK, {

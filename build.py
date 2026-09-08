@@ -850,3 +850,252 @@ out = DOC % dict(
 )
 io.open('index.html', 'w', encoding='utf-8').write(out)
 print('index.html — %d bytes' % len(out.encode('utf-8')))
+
+
+# ══ keeper.html — 열람 현황 (링크 어디에도 노출하지 않는다) ═══════════
+#
+# 비밀번호는 게이트와 같은 것을 쓰되, 평문은 저장소에 두지 않는다.
+# gate.pw 에서 PBKDF2 로 검증값만 뽑아 페이지에 심고, 입력값을 같은 방식으로
+# 유도해 맞춰 본다. 게이트의 복호화 키와 섞이지 않도록 salt 라벨을 달리 한다.
+#
+# 이 문은 속도 방지턱이지 자물쇠가 아니다. presence 채널은 anon 키로 누구나
+# 구독할 수 있으므로, 채널에는 익명 이름과 섹션명 말고는 아무것도 싣지 않는다.
+
+KEEPER_SALT = hashlib.sha256(
+    ('woon-keeper-salt:' + GATE_VERSION).encode('utf-8')).digest()[:16]
+KEEPER_VERIFIER = hashlib.pbkdf2_hmac(
+    'sha256', GATE_PASSWORD.encode('utf-8'), KEEPER_SALT, PBKDF2_ITERS, 32).hex()
+
+KEEPER_TPL = r'''<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>守 — 열람 현황</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
+:root{
+  --paper:#ECE9E4; --ash:#D6D2CC; --ink:#1F2328; --charcoal:#3D444B;
+  --indigo:#4C5E84; --earth:#8D877E;
+  --serif:"Noto Serif KR","Nanum Myeongjo","Apple SD Gothic Neo",serif;
+  --hair:rgba(31,35,40,.11);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; padding:clamp(28px,6vw,72px) clamp(20px,5vw,40px);
+  background:var(--paper); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+main{max-width:560px; margin:0 auto}
+.mark{
+  font-size:clamp(40px,9vw,56px); line-height:1; margin:0 0 .2em;
+  color:var(--indigo); opacity:.22; font-weight:400;
+}
+h1{font-size:19px; font-weight:600; letter-spacing:.06em; margin:0 0 2px}
+.sub{font-size:13px; color:var(--earth); margin:0 0 32px; letter-spacing:.04em}
+form{display:flex; gap:8px; flex-wrap:wrap}
+input{
+  flex:1 1 180px; min-width:0; padding:11px 13px;
+  border:1px solid var(--hair); border-radius:2px;
+  background:rgba(255,255,255,.5); color:var(--ink);
+  font-family:var(--serif); font-size:16px; letter-spacing:.3em;
+}
+input:focus{outline:none; border-color:var(--indigo)}
+button{
+  padding:11px 20px; border:1px solid var(--charcoal); border-radius:2px;
+  background:var(--charcoal); color:var(--paper);
+  font-family:var(--serif); font-size:15px; letter-spacing:.1em; cursor:pointer;
+}
+button:hover{background:var(--ink); border-color:var(--ink)}
+.msg{font-size:13px; color:var(--earth); margin:12px 0 0; min-height:1.4em}
+.msg.bad{color:#8a4a4a}
+.count{font-size:13px; color:var(--earth); letter-spacing:.05em; margin:0 0 14px}
+ul{list-style:none; margin:0; padding:0}
+li{
+  padding:13px 0; border-top:1px solid var(--hair);
+  display:flex; flex-wrap:wrap; gap:2px 10px; align-items:baseline;
+}
+li:last-child{border-bottom:1px solid var(--hair)}
+.who{font-size:16px}
+.at{font-size:14px; color:var(--charcoal)}
+.dur{font-size:12px; color:var(--earth); margin-left:auto; letter-spacing:.04em}
+.empty{padding:16px 0; color:var(--earth); font-size:14px; border-top:1px solid var(--hair)}
+.foot{margin:26px 0 0; font-size:12px; color:var(--earth); line-height:1.7}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main>
+  <p class="mark" aria-hidden="true">守</p>
+  <h1>열람 현황</h1>
+  <p class="sub">月影 保管 · 人事錄</p>
+
+  <form id="f" autocomplete="off">
+    <input id="pw" type="password" inputmode="numeric" placeholder="비밀번호" aria-label="비밀번호">
+    <button type="submit">확인</button>
+  </form>
+  <p class="msg" id="msg" role="status"></p>
+
+  <section id="live" hidden>
+    <p class="count" id="count">연결 중…</p>
+    <ul id="list"></ul>
+    <p class="foot">
+      이 화면은 구독만 하고 자신을 알리지 않는다 — 열람자 수에 섞이지 않는다.<br>
+      갱신은 4초에 한 번이라 방금 옮긴 섹션은 조금 늦게 보인다.
+    </p>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+  var SALT = '__SALT__', ITERS = __ITERS__, VERIFIER = '__VERIFIER__';
+  var STORE = 'woon-keeper-__VERSION__';
+
+  var SECTIONS = ['外貌','身元','性情','傳承','渴脈','年代','日常','好惡','非說','確認','非公開'];
+
+  var f = document.getElementById('f'), pw = document.getElementById('pw');
+  var msg = document.getElementById('msg'), live = document.getElementById('live');
+  var list = document.getElementById('list'), count = document.getElementById('count');
+
+  function hex(buf) {
+    return Array.from(new Uint8Array(buf))
+      .map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function bytes(h) {
+    var a = new Uint8Array(h.length / 2);
+    for (var i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16);
+    return a;
+  }
+  function derive(p) {
+    return crypto.subtle
+      .importKey('raw', new TextEncoder().encode(p), 'PBKDF2', false, ['deriveBits'])
+      .then(function (k) {
+        return crypto.subtle.deriveBits(
+          { name: 'PBKDF2', salt: bytes(SALT), iterations: ITERS, hash: 'SHA-256' }, k, 256);
+      }).then(hex);
+  }
+
+  function open_() {
+    f.hidden = true;
+    msg.textContent = '';
+    live.hidden = false;
+    start();
+  }
+
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    msg.className = 'msg';
+    msg.textContent = '확인하는 중…';
+    derive(pw.value).then(function (h) {
+      if (h !== VERIFIER) {
+        msg.className = 'msg bad';
+        msg.textContent = '맞지 않는다.';
+        pw.value = '';
+        return;
+      }
+      try { localStorage.setItem(STORE, h); } catch (err) {}
+      open_();
+    }).catch(function () {
+      msg.className = 'msg bad';
+      msg.textContent = '확인할 수 없다.';
+    });
+  });
+
+  try {
+    if (localStorage.getItem(STORE) === VERIFIER) open_();
+  } catch (e) {}
+
+  function elapsed(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return s + '초';
+    if (s < 3600) return Math.floor(s / 60) + '분';
+    return Math.floor(s / 3600) + '시간 ' + Math.floor((s % 3600) / 60) + '분';
+  }
+
+  function start() {
+    var cfg = window.WOON_CONFIG || {};
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || !window.supabase) {
+      count.textContent = '연결할 수 없다.';
+      return;
+    }
+    var client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+      realtime: { params: { eventsPerSecond: 2 } }
+    });
+    // track 하지 않는다 — 구독만 한다. 그래야 열람자 수에 잡히지 않는다.
+    var ch = client.channel(cfg.PRESENCE_CHANNEL || 'woon-page', {
+      config: { presence: { key: 'keeper-' + Math.random().toString(36).slice(2, 8) } }
+    });
+
+    function render() {
+      var st = {};
+      try { st = ch.presenceState(); } catch (e) { return; }
+      var rows = [];
+      Object.keys(st).forEach(function (k) {
+        var m = (st[k] && st[k][0]) || {};
+        var name = typeof m.name === 'string' ? m.name.slice(0, 20) : '';
+        if (name.indexOf('익명의 ') !== 0) name = '익명의 방문자';
+        var sec = SECTIONS.indexOf(m.section) >= 0 ? m.section : '';
+        rows.push({ name: name, sec: sec, at: typeof m.at === 'number' ? m.at : Date.now() });
+      });
+      rows.sort(function (a, b) { return a.at - b.at; });
+
+      count.textContent = rows.length
+        ? '열람 중 ' + rows.length + '인'
+        : '지금은 아무도 없다.';
+      list.textContent = '';
+      if (!rows.length) {
+        var p = document.createElement('li');
+        p.className = 'empty';
+        p.textContent = '—';
+        list.appendChild(p);
+        return;
+      }
+      var now = Date.now();
+      rows.forEach(function (r) {
+        var li = document.createElement('li');
+        var a = document.createElement('span');
+        a.className = 'who';
+        a.textContent = r.name;
+        var b = document.createElement('span');
+        b.className = 'at';
+        b.textContent = r.sec ? '— ' + r.sec + ' 열람 중' : '— 열람 중';
+        var c = document.createElement('span');
+        c.className = 'dur';
+        c.textContent = '접속 ' + elapsed(now - r.at);
+        li.appendChild(a); li.appendChild(b); li.appendChild(c);
+        list.appendChild(li);
+      });
+    }
+
+    ch.on('presence', { event: 'sync' }, render);
+    ch.subscribe(function (st) {
+      if (st === 'SUBSCRIBED') render();
+      else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') count.textContent = '연결이 끊겼다.';
+    });
+    setInterval(render, 10000);   // 접속 시간만 다시 그린다
+  }
+})();
+</script>
+</body>
+</html>
+'''
+
+keeper = (KEEPER_TPL
+          .replace('__SALT__', KEEPER_SALT.hex())
+          .replace('__ITERS__', str(PBKDF2_ITERS))
+          .replace('__VERIFIER__', KEEPER_VERIFIER)
+          .replace('__VERSION__', GATE_VERSION))
+io.open('keeper.html', 'w', encoding='utf-8').write(keeper)
+print('keeper.html — %d bytes' % len(keeper.encode('utf-8')))
+
+# robots.txt — 통째로 막는다.
+# keeper.html 만 Disallow 하면 오히려 그 경로를 광고하는 꼴이다.
+ROBOTS = 'User-agent: *\nDisallow: /\n'
+io.open('robots.txt', 'w', encoding='utf-8').write(ROBOTS)
+print('robots.txt — %d bytes' % len(ROBOTS))

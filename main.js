@@ -311,6 +311,114 @@
 
 
 /* ============================================================
+   섹션 체류 추적
+   지금 어느 섹션을 보고 있는지, 각 섹션을 얼마나 봤는지 센다.
+   열람 종료 알림의 요약과 관리자 뷰(keeper)의 presence 가 함께 쓴다.
+
+   탭이 보이는 동안만 센다. 배경에 띄워 둔 시간은 체류가 아니다.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var entries = [];      // { el, name }
+  var dwell = {};        // 섹션명 → 누적 ms
+  var current = null;
+  var since = null;      // 현재 섹션을 보기 시작한 시각 (안 보이면 null)
+  var listeners = [];
+
+  function nameOf(sec) {
+    var h = sec.querySelector('h2');
+    if (!h) return null;
+    var han = h.querySelector('.swap__han');
+    var t = (han || h).textContent.trim();
+    return t || null;
+  }
+
+  function flush() {
+    if (current && since !== null) {
+      dwell[current] = (dwell[current] || 0) + (Date.now() - since);
+    }
+    since = null;
+  }
+
+  function resume() {
+    if (current && document.visibilityState !== 'hidden') since = Date.now();
+  }
+
+  function setCurrent(name) {
+    if (name === current) return;
+    flush();
+    current = name;
+    resume();
+    for (var i = 0; i < listeners.length; i++) {
+      try { listeners[i](current); } catch (e) {}
+    }
+  }
+
+  var io = null;
+  if ('IntersectionObserver' in window) {
+    // 인덱스 강조와 같은 기준 — 화면 한가운데를 지나는 섹션이 '현재'다
+    io = new IntersectionObserver(function (ens) {
+      ens.forEach(function (en) {
+        var hit = entries.filter(function (x) { return x.el === en.target; })[0];
+        if (hit) hit.visible = en.isIntersecting;
+      });
+      var act = entries.filter(function (x) { return x.visible; })[0];
+      setCurrent(act ? act.name : null);
+    }, { rootMargin: '-45% 0px -45% 0px' });
+  }
+
+  function scan() {
+    var secs = document.querySelectorAll('section');
+    Array.prototype.forEach.call(secs, function (el) {
+      if (entries.filter(function (x) { return x.el === el; })[0]) return;
+      var n = nameOf(el);
+      if (!n) return;
+      entries.push({ el: el, name: n });
+      if (io) io.observe(el);
+    });
+  }
+
+  scan();
+
+  // 잠금이 풀리면 非說·確認 이 새로 붙는다 — 그때 다시 훑는다
+  var hydrate = window.__woonHydrate;
+  window.__woonHydrate = function (root) {
+    try { if (hydrate) hydrate(root); } finally { try { scan(); } catch (e) {} }
+  };
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flush();
+    else resume();
+  });
+
+  window.__woonSections = {
+    current: function () { return current; },
+    onChange: function (fn) { listeners.push(fn); },
+
+    // 상위 3개를 "年代 6분 · 渴脈 3분" 으로 만들고 누적을 비운다.
+    // 열람 종료 알림의 시간이 '그 구간'인 것과 눈금을 맞추려는 것이다.
+    take: function () {
+      flush();
+      var arr = [];
+      for (var k in dwell) {
+        if (Object.prototype.hasOwnProperty.call(dwell, k) && dwell[k] >= 30000) {
+          arr.push({ n: k, ms: dwell[k] });
+        }
+      }
+      dwell = {};
+      resume();
+      arr.sort(function (a, b) { return b.ms - a.ms; });
+      return arr.slice(0, 3).map(function (x) {
+        var sec = Math.round(x.ms / 1000);
+        return x.n + ' ' + (sec < 60 ? sec + '초' : Math.max(1, Math.round(sec / 60)) + '분');
+      }).join(' · ');
+    }
+  };
+})();
+
+
+/* ============================================================
    실시간 익명 열람자 (Supabase Realtime Presence)
    키가 비어 있거나 연결에 실패하면 표시를 조용히 걷고 끝낸다.
    페이지 동작에는 어떤 경우에도 영향을 주지 않는다.
@@ -361,10 +469,42 @@
       try { render(Object.keys(channel.presenceState()).length); } catch (e) {}
     });
 
+    // presence 는 공개 채널이다. 익명 이름과 섹션명 말고는 아무것도 싣지 않는다.
+    var joined = Date.now();
+    var live = false;
+    var timer = null;
+    var lastPush = 0;
+
+    function payload() {
+      var secs = window.__woonSections;
+      var nameFn = window.__woonName;
+      return {
+        at: joined,
+        name: nameFn ? nameFn() : '익명의 방문자',
+        section: (secs && secs.current()) || ''
+      };
+    }
+
+    function push() {
+      if (!live) return;
+      lastPush = Date.now();
+      try { channel.track(payload()); } catch (e) {}
+    }
+
+    // 스크롤할 때마다 보내지 않는다 — 4초에 한 번으로 묶는다
+    function schedule() {
+      if (!live || timer) return;
+      timer = setTimeout(function () {
+        timer = null;
+        push();
+      }, Math.max(0, 4000 - (Date.now() - lastPush)));
+    }
+
     channel.subscribe(function (status) {
       try {
         if (status === 'SUBSCRIBED') {
-          channel.track({ at: Date.now() });
+          live = true;
+          push();
           el.classList.add('is-live');
           render(1);
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -372,6 +512,8 @@
         }
       } catch (e) { disable(); }
     });
+
+    if (window.__woonSections) window.__woonSections.onChange(schedule);
 
     window.addEventListener('beforeunload', function () {
       try { channel.unsubscribe(); } catch (e) {}
@@ -579,6 +721,9 @@
     try { return localStorage.getItem('woon-owner') === '1'; } catch (e) { return false; }
   }
 
+  // presence 가 같은 이름을 쓴다
+  window.__woonName = visitorName;
+
   window.__woonNotify = function (type, duration) {
     if (type !== 'visit' && type !== 'unlock' && type !== 'leave') return;
     if (isOwner()) return;
@@ -587,7 +732,14 @@
 
     var url = cfg.SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/notify';
     var payload = { type: type, name: visitorName() };
-    if (type === 'leave') payload.duration = duration;
+    if (type === 'leave') {
+      payload.duration = duration;
+      var secs = window.__woonSections;
+      if (secs) {
+        var sum = secs.take();
+        if (sum) payload.sections = sum;
+      }
+    }
     var body = JSON.stringify(payload);
 
     // 떠나는 순간의 일반 fetch 는 유실된다. sendBeacon 은 헤더를 못 붙이므로
