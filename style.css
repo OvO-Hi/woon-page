@@ -2289,3 +2289,45 @@ html.js .hero__figure::before{ animation:auraPulse 2s ease-out .45s 1; }
   .gate__panel.is-wrong{ animation:none !important; }
   .gate__content{ transition:none !important; }
 }
+
+
+/* ============================================================
+   문서 전체 봉인 (封) — 잠금 화면
+   본문은 암호문으로만 실려 있고, 풀기 전에는 이 화면뿐이다.
+   ============================================================ */
+.lock{
+  min-height:100vh;          /* svh 미지원 브라우저용 */
+  min-height:100svh;
+  display:grid;
+  place-items:center;
+  padding:clamp(28px,8vw,88px) 20px;
+}
+.lock .gate__panel{
+  max-width:560px;
+  padding:0;
+  text-align:center;
+}
+.lock .gate__mark{ opacity:.14; }
+.lock__title{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(16px,2.2vw,20px);
+  line-height:1.6;
+  letter-spacing:.02em;
+  color:var(--ink);
+  margin:0 0 .7em;
+}
+.lock .gate__lead{ margin-bottom:1.6em; }
+.lock .gate__form{ justify-content:center; }
+.lock__note{
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.8;
+  letter-spacing:.01em;
+  color:var(--earth);
+  margin:2.4em 0 0;
+}
+.lock__rule{
+  width:44px; height:1px; margin:1.8em auto 0;
+  background:var(--rule); border:0;
+}

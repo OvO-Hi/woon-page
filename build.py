@@ -37,6 +37,21 @@ SECRET = _secrets()
 GATE_VERSION  = 'woon-gate-v1'
 PBKDF2_ITERS  = 310000
 
+# 문서 전체 봉인. 안쪽 비공개 구역(GATE_*)과는 별개의 비밀번호·버전을 쓴다.
+# 심사자에게는 둘을 함께 건넨다.
+def _doc_password():
+    pw = os.environ.get('WOON_DOC_PW')
+    if pw:
+        return pw.strip()
+    try:
+        return io.open('doc.pw', encoding='utf-8').read().strip()
+    except IOError:
+        raise SystemExit('doc.pw 가 없습니다. 문서 전체 비밀번호를 담은 doc.pw 를 '
+                         '만들거나 WOON_DOC_PW 환경변수를 설정하세요.')
+
+DOC_PASSWORD = _doc_password()
+DOC_VERSION  = 'woon-doc-v1'
+
 
 raw = [l.rstrip('\n') for l in io.open('content.txt', encoding='utf-8')]
 
@@ -826,17 +841,19 @@ def asset_v(path):
     return hashlib.sha256(io.open(path, 'rb').read()).hexdigest()[:10]
 
 
-def encrypt_region(plain, password):
+def encrypt_region(plain, password, version=None, label='woon-gate-salt:'):
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     # salt 는 버전에서 결정적으로 만든다. 매 빌드마다 무작위로 두면
     # 기존 기기에 저장된 유도 키가 빌드할 때마다 무효가 된다.
-    # 비밀번호를 바꿀 때는 GATE_VERSION 을 올리므로 salt 도 함께 바뀐다.
-    salt = hashlib.sha256(('woon-gate-salt:' + GATE_VERSION).encode('utf-8')).digest()[:16]
+    # 비밀번호를 바꿀 때는 버전을 올리므로 salt 도 함께 바뀐다.
+    # label 은 두 봉인의 키가 섞이지 않게 갈라 준다.
+    version = version or GATE_VERSION
+    salt = hashlib.sha256((label + version).encode('utf-8')).digest()[:16]
     iv = os.urandom(12)
     key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, PBKDF2_ITERS, 32)
     ct = AESGCM(key).encrypt(iv, plain.encode('utf-8'), None)
     b64 = lambda x: base64.b64encode(x).decode('ascii')
-    return {'v': GATE_VERSION, 'it': PBKDF2_ITERS,
+    return {'v': version, 'it': PBKDF2_ITERS,
             'salt': b64(salt), 'iv': b64(iv), 'ct': b64(ct)}
 
 gatedata = json.dumps(encrypt_region(private_html, GATE_PASSWORD), separators=(',', ':'))
@@ -871,8 +888,180 @@ out = DOC % dict(
     privnote=e('아래는 비공개 사항입니다.'),
     css_v=asset_v('style.css'), js_v=asset_v('main.js'),
 )
-io.open('index.html', 'w', encoding='utf-8').write(out)
-print('index.html — %d bytes' % len(out.encode('utf-8')))
+# ══ 문서 전체 봉인 ═══════════════════════════════════════════
+#
+# 완성된 페이지에서 본문(topbar ~ 안쪽 게이트 암호문)을 통째로 떼어
+# AES-GCM 으로 잠그고, 그 자리에 잠금 화면만 남긴다.
+# 배포되는 HTML 에는 본문 평문이 한 글자도 없다.
+#
+# main.js 는 정적으로 걸지 않는다. 해제 뒤에 스크립트를 붙이므로
+# 모든 초기화(토글·IO·인덱스·추적·알림·presence)가 본문이 들어온 뒤에
+# 처음부터 정상으로 돈다. 방문 알림과 presence 참여, 열람 시간 기산점이
+# 모두 해제 시점이 되는 것도 이 때문이다.
+
+LOCK_HTML = '''
+<div class="lock" id="woon-lock">
+  <div class="gate__panel">
+    <p class="gate__mark" aria-hidden="true">封</p>
+    <h1 class="lock__title">[ 운 / 월영 / 파수 / 1품 / M]</h1>
+    <p class="gate__lead">月影 保管 &middot; 一品 把守 人事錄<br>열람에는 인증이 필요합니다.</p>
+    <form class="gate__form" id="lock-form" autocomplete="off">
+      <label class="sr-only" for="lock-pw">비밀번호</label>
+      <input class="gate__input" id="lock-pw" type="password" inputmode="numeric"
+             autocomplete="off" spellcheck="false" aria-describedby="lock-msg">
+      <button class="gate__btn" type="submit">열람</button>
+    </form>
+    <p class="gate__msg" id="lock-msg" role="status" aria-live="polite"></p>
+    <hr class="lock__rule">
+    <p class="lock__note">
+      하단의 비공개 구역에는 별도의 비밀번호가 필요합니다.
+    </p>
+    <noscript>
+      <p class="lock__note">이 기록은 자바스크립트가 있어야 열립니다.</p>
+    </noscript>
+  </div>
+</div>
+
+<div class="doc" id="woon-doc" hidden></div>
+'''
+
+LOCK_JS = r'''
+(function () {
+  'use strict';
+  var el = document.getElementById('doc-data');
+  if (!el) return;
+  var D;
+  try { D = JSON.parse(el.textContent); } catch (e) { return; }
+
+  var STORE = D.v;                       // woon-doc-v1
+  var MAIN  = el.getAttribute('data-main');
+  var lock  = document.getElementById('woon-lock');
+  var doc   = document.getElementById('woon-doc');
+  var form  = document.getElementById('lock-form');
+  var pw    = document.getElementById('lock-pw');
+  var msg   = document.getElementById('lock-msg');
+  var btn   = form.querySelector('button');
+  var panel = lock.querySelector('.gate__panel');
+
+  function bytes(b64) {
+    var raw = atob(b64), a = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) a[i] = raw.charCodeAt(i);
+    return a;
+  }
+  function unhex(h) {
+    var a = new Uint8Array(h.length / 2);
+    for (var i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16);
+    return a;
+  }
+  function hex(buf) {
+    return Array.prototype.map.call(new Uint8Array(buf), function (x) {
+      return x.toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  function derive(p) {
+    return crypto.subtle
+      .importKey('raw', new TextEncoder().encode(p), 'PBKDF2', false, ['deriveBits'])
+      .then(function (k) {
+        return crypto.subtle.deriveBits(
+          { name: 'PBKDF2', salt: bytes(D.salt), iterations: D.it, hash: 'SHA-256' }, k, 256);
+      });
+  }
+
+  function open_(keyBytes) {
+    return crypto.subtle
+      .importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt'])
+      .then(function (k) {
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes(D.iv) }, k, bytes(D.ct));
+      })
+      .then(function (buf) { return new TextDecoder().decode(buf); });
+  }
+
+  function reveal(html, keyBytes) {
+    try { localStorage.setItem(STORE, hex(keyBytes)); } catch (e) {}
+    // main.js 가 붙기 전에 걷어야 토글이 잠깐 펼쳐졌다 접히는 일이 없다
+    document.documentElement.classList.remove('no-js');
+    doc.innerHTML = html;
+    doc.hidden = false;
+    lock.hidden = true;
+    var s = document.createElement('script');
+    s.src = MAIN;
+    document.body.appendChild(s);
+  }
+
+  // "펼치는 중…" 이 먼저 그려지도록 한 틱 미루고 시작한다.
+  // requestAnimationFrame 은 쓰지 않는다 — 탭이 배경에 있으면 프레임이
+  // 멈춰서, 제출하고 다른 탭으로 옮긴 사람은 영영 펼쳐지지 않는다.
+  function soon(fn) { setTimeout(fn, 24); }
+
+  function unlock(keyBytes, onFail) {
+    msg.className = 'gate__msg';
+    msg.textContent = '펼치는 중…';
+    soon(function () {
+      open_(keyBytes).then(function (html) {
+        reveal(html, keyBytes);
+      }).catch(onFail);
+    });
+  }
+
+  // 기억해 둔 기기
+  var saved = null;
+  try { saved = localStorage.getItem(STORE); } catch (e) {}
+  if (saved && /^[0-9a-f]{64}$/.test(saved)) {
+    unlock(unhex(saved), function () {
+      try { localStorage.removeItem(STORE); } catch (e) {}
+      msg.textContent = '';
+    });
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = pw.value;
+    if (!v) return;
+    btn.disabled = true;
+    msg.className = 'gate__msg';
+    msg.textContent = '확인하는 중…';
+    derive(v).then(function (bits) {
+      var kb = new Uint8Array(bits);
+      return open_(kb).then(function (html) {
+        msg.textContent = '펼치는 중…';
+        soon(function () { reveal(html, kb); });
+      });
+    }).catch(function () {
+      btn.disabled = false;
+      pw.value = '';
+      msg.className = 'gate__msg is-error';
+      msg.textContent = '맞지 않습니다.';
+      panel.classList.remove('is-wrong');
+      void panel.offsetWidth;
+      panel.classList.add('is-wrong');
+      pw.focus();
+    });
+  });
+})();
+'''
+
+# 완성된 페이지를 잘라 본문만 잠근다
+_head_mark = '<body>\n'
+_i = out.index(_head_mark) + len(_head_mark)
+_j = out.index('<header class="topbar">')
+_k = out.index('<script src="config.js">')
+head, region = out[:_i], out[_j:_k]
+
+docdata = json.dumps(
+    encrypt_region(region, DOC_PASSWORD, DOC_VERSION, 'woon-doc-salt:'),
+    separators=(',', ':'))
+
+locked = (head + LOCK_HTML +
+          '\n<script type="application/json" id="doc-data" data-main="main.js?v=' +
+          asset_v('main.js') + '">' + docdata + '</script>\n'
+          '<script src="config.js"></script>\n'
+          '<script>' + LOCK_JS + '</script>\n'
+          '</body>\n</html>\n')
+
+io.open('index.html', 'w', encoding='utf-8').write(locked)
+print('index.html (봉인) — %d bytes | 본문 %d bytes' %
+      (len(locked.encode('utf-8')), len(region.encode('utf-8'))))
 
 
 # ══ keeper.html — 열람 현황 (링크 어디에도 노출하지 않는다) ═══════════
